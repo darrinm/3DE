@@ -1,0 +1,2 @@
+grep -o '../examples/js[^"]*' editor/index.html | xargs -I {} cp -v ../three.js/examples/{} editor/deps
+cp -v ../three.js/build/three*.js editor
