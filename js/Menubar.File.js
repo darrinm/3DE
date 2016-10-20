@@ -52,6 +52,7 @@ Menubar.File = function ( editor ) {
 
 						editor.clear();
 						editor.fromJSON( JSON.parse( content ) );
+						editor.setTitle( files[0].name.replace(/\.[^/.]+$/, "") );
 
 					} );
 				},
@@ -101,7 +102,7 @@ Menubar.File = function ( editor ) {
 
 		var parameters = {
 			files: [
-				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': 'test.3de' }
+				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': editor.title + '.3de' }
 			]
 		};
 

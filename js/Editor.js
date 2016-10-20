@@ -35,6 +35,8 @@ var Editor = function () {
 
 		// notifications
 
+		titleChanged: new Signal(),
+
 		editorCleared: new Signal(),
 
 		savingStarted: new Signal(),
@@ -444,6 +446,13 @@ Editor.prototype = {
 
 	},
 
+	setTitle: function ( title ) {
+
+		this.title = title;
+		this.signals.titleChanged.dispatch();
+
+	},
+
 	//
 
 	fromJSON: function ( json ) {
@@ -458,6 +467,9 @@ Editor.prototype = {
 			return;
 
 		}
+
+		if ( json.metadata && json.metadata.title )
+			this.setTitle( json.metadata.title );
 
 		var camera = loader.parse( json.camera );
 
@@ -495,7 +507,9 @@ Editor.prototype = {
 
 		return {
 
-			metadata: {},
+			metadata: {
+				title: this.title
+			},
 			project: {
 				gammaInput: this.config.getKey( 'project/renderer/gammaInput' ),
 				gammaOutput: this.config.getKey( 'project/renderer/gammaOutput' ),

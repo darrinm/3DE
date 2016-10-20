@@ -44,6 +44,7 @@ Menubar.Examples = function ( editor ) {
 
 						editor.clear();
 						editor.fromJSON( JSON.parse( text ) );
+						editor.setTitle( item.title );
 
 					} );
 

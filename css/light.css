@@ -73,6 +73,18 @@ input.Number {
 	top: 0;
 }
 
+	#menubar .document_title {
+		overflow: hidden;
+		text-align: center;
+		padding: 8px 0;
+		font-size: 14;
+		font-weight: bold;
+	}
+
+	#menubar .title55 {
+		cursor: text;
+	}
+
 	#menubar .menu {
 		float: left;
 		cursor: pointer;
