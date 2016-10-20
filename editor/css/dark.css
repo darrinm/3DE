@@ -87,6 +87,18 @@ input.Number {
 		padding-right: 8px;
 	}
 
+	#menubar .document_title {
+		overflow: hidden;
+		text-align: center;
+		padding: 8px 0;
+		font-size: 14;
+		font-weight: bold;
+	}
+
+	#menubar .document_title_text {
+		cursor: text;
+	}
+
 	#menubar .menu.right {
 		float: right;
 		cursor: auto;
