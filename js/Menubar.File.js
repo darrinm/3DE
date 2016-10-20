@@ -36,48 +36,51 @@ Menubar.File = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Open (Dropbox)' );
+	option.setTextContent( 'Open (Dropbox)...' );
 	option.onClick( function () {
 
-		var chooseOptions = {
+		if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
+			var chooseOptions = {
 
-			// Required. Called when a user selects an item in the Chooser.
-			success: function ( files ) {
-				var manager = new THREE.LoadingManager( function () {
-				} );
+				// Required. Called when a user selects an item in the Chooser.
+				success: function ( files ) {
+					var manager = new THREE.LoadingManager( function () {
+					} );
 
-				var loader = new THREE.XHRLoader( manager );
-				loader.load( files[0].link, function ( content ) {
+					var loader = new THREE.XHRLoader( manager );
+					loader.load( files[0].link, function ( content ) {
 
-					editor.clear();
-					editor.fromJSON( JSON.parse( content ) );
+						editor.clear();
+						editor.fromJSON( JSON.parse( content ) );
 
-				} );
-			},
+					} );
+				},
 
-			// Optional. Called when the user closes the dialog without selecting a file
-			// and does not include any parameters.
-			cancel: function () {
+				// Optional. Called when the user closes the dialog without selecting a file
+				// and does not include any parameters.
+				cancel: function () {
 
-			},
+				},
 
-			// Optional. "preview" (default) is a preview link to the document for sharing,
-			// "direct" is an expiring link to download the contents of the file. For more
-			// information about link types, see Link types below.
-			linkType: "direct", // or "preview"
+				// Optional. "preview" (default) is a preview link to the document for sharing,
+				// "direct" is an expiring link to download the contents of the file. For more
+				// information about link types, see Link types below.
+				linkType: "direct", // or "preview"
 
-			// Optional. A value of false (default) limits selection to a single file, while
-			// true enables multiple file selection.
-			multiselect: false, // or true
+				// Optional. A value of false (default) limits selection to a single file, while
+				// true enables multiple file selection.
+				multiselect: false, // or true
 
-			// Optional. This is a list of file extensions. If specified, the user will
-			// only be able to select files with these extensions. You may also specify
-			// file types, such as "video" or "images" in the list. For more information,
-			// see File types below. By default, all extensions are allowed.
-			extensions: ['.3de'],
-		};
+				// Optional. This is a list of file extensions. If specified, the user will
+				// only be able to select files with these extensions. You may also specify
+				// file types, such as "video" or "images" in the list. For more information,
+				// see File types below. By default, all extensions are allowed.
+				extensions: ['.3de'],
+			};
 
-		Dropbox.choose( chooseOptions );
+			Dropbox.choose( chooseOptions );
+
+		}
 
 	} );
 	options.add( option );
@@ -86,7 +89,7 @@ Menubar.File = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Save (Dropbox)' );
+	option.setTextContent( 'Save (Dropbox)...' );
 	option.onClick( function () {
 
 		var output = editor.toJSON();
@@ -98,7 +101,7 @@ Menubar.File = function ( editor ) {
 
 		var parameters = {
 			files: [
-				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': '3DE/test.3de' }
+				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': 'test.3de' }
 			]
 		};
 
@@ -122,7 +125,7 @@ Menubar.File = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Import' );
+	option.setTextContent( 'Import...' );
 	option.onClick( function () {
 
 		fileInput.click();
