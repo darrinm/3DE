@@ -419,6 +419,7 @@ Editor.prototype = {
 	},
 
 	clear: function () {
+		this.setTitle( 'Untitled' );
 
 		this.history.clear();
 		this.storage.clear();
