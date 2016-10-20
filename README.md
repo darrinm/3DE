@@ -1,4 +1,4 @@
-## [Try it now.](https//darrinm.github.io/3DE)
+## [Try it now.](https://darrinm.github.io/3DE)
 
 ## Install
 < nothing >
