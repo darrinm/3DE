@@ -1,18 +1,18 @@
 ## [Try it now.](https//darrinm.github.io/3DE)
 
-# Install
+## Install
 < nothing >
 
-# Build
+## Build
 < nothing >
 
-# Run
+## Run
 ```bash
 cd editor
 live-server
 ```
 
-# Deploy
+## Deploy
 ```bash
 # From project root
 bin/push
