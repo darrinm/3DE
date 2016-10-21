@@ -283,12 +283,9 @@ Menubar.File = function ( editor ) {
 
 	// Publish
 
-	var option = new UI.Row();
-	option.setClass( 'option' );
-	option.setTextContent( 'Publish' );
-	option.onClick( function () {
+	var gatherFiles = function ( onGathered ) {
 
-		var zip = new JSZip();
+		var files = [];
 
 		//
 
@@ -301,14 +298,12 @@ Menubar.File = function ( editor ) {
 		output = JSON.stringify( output, null, '\t' );
 		output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
 
-		zip.file( 'app.json', output );
+		files.push( { name: 'app.json', data: output } );
 
 		//
 
 		var manager = new THREE.LoadingManager( function () {
-
-			save( zip.generate( { type: 'blob' } ), 'download.zip' );
-
+			onGathered( files );
 		} );
 
 		var loader = new THREE.XHRLoader( manager );
@@ -326,41 +321,64 @@ Menubar.File = function ( editor ) {
 
 			content = content.replace( '<!-- includes -->', includes.join( '\n\t\t' ) );
 
-			zip.file( 'index.html', content );
+			files.push( { name: 'index.html', data: content } );
 
 		} );
+
 		loader.load( 'js/libs/app.js', function ( content ) {
 
-			zip.file( 'js/app.js', content );
+			files.push( { name: 'js/app.js', data: content } );
 
 		} );
-		loader.load( '../build/three.min.js', function ( content ) {
 
-			zip.file( 'js/three.min.js', content );
+		loader.load( 'three.min.js', function ( content ) {
+
+			files.push( { name: 'js/three.min.js', data: content } );
 
 		} );
 
 		if ( vr ) {
 
-			loader.load( '../examples/js/controls/VRControls.js', function ( content ) {
+			loader.load( 'deps/VRControls.js', function ( content ) {
 
-				zip.file( 'js/VRControls.js', content );
-
-			} );
-
-			loader.load( '../examples/js/effects/VREffect.js', function ( content ) {
-
-				zip.file( 'js/VREffect.js', content );
+				files.push( { name: 'js/VRControls.js', data: content } );
 
 			} );
 
-			loader.load( '../examples/js/WebVR.js', function ( content ) {
+			loader.load( 'deps/VREffect.js', function ( content ) {
 
-				zip.file( 'js/WebVR.js', content );
+				files.push( { name: 'js/VREffect.js', data: content } );
+
+			} );
+
+			loader.load( 'deps/WebVR.js', function ( content ) {
+
+				files.push( { name: 'js/WebVR.js', data: content } );
 
 			} );
 
 		}
+
+	}
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'Publish' );
+	option.onClick( function () {
+
+		gatherFiles( function ( files ) {
+
+			var zip = new JSZip();
+
+			files.forEach( function ( file ) {
+
+				zip.file( file.name, file.data );
+
+			} );
+
+			save( zip.generate( { type: 'blob' } ), 'download.zip' );
+
+		} );
 
 	} );
 	options.add( option );
@@ -372,13 +390,20 @@ Menubar.File = function ( editor ) {
 	option.setTextContent( 'Publish (Dropbox)' );
 	option.onClick( function () {
 
-		var parameters = {
-			files: [
-				{ 'url': 'data:text/plain;base64,' + window.btoa( "Hello, World" ), 'filename': 'app/test.txt' }
-			]
-		};
+		gatherFiles( function ( files ) {
 
-		Dropbox.save( parameters );
+			var saveOptions = { files: [] };
+
+			files.forEach( function ( file ) {
+
+				var url = 'data:text/plain;base64,' + window.btoa( file.data );
+				saveOptions.files.push ( { url: url, filename: editor.title + '/' + file.name } );
+
+			} );
+
+			Dropbox.save( saveOptions );
+
+		} );
 
 	} );
 	options.add( option );
