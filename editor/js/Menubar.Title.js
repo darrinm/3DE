@@ -10,6 +10,7 @@ Menubar.Title = function ( editor ) {
 	if (!editor.title)
 		editor.setTitle( 'Untitled' );
 	var title = new UI.Text( editor.title );
+	title.dom.style.cursor = 'text';
 	title.setClass( 'document_title_text' );
 	container.add( title );
 	title.onClick( function () {

@@ -13,6 +13,7 @@ Menubar.User = function ( editor ) {
 
 	var userUI = new UI.Text( '<user>' );
 	userUI.setClass( 'title' );
+	userUI.dom.style.cursor = 'pointer';
 	container.add( userUI );
 	userUI.onClick( function () {
 
@@ -126,7 +127,7 @@ Menubar.User = function ( editor ) {
 
 			// User is signed out.
 			console.log( 'onAuthStateChanged no user' );
-			userUI.setValue( 'Sign in / Sign up' );
+			userUI.setValue( 'Sign in' );
 		}
 
 	}, function ( error ) {
