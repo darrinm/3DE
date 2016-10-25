@@ -8,6 +8,7 @@ Menubar.Status = function ( editor ) {
 	container.setClass( 'menu right' );
 
 	var autosave = new UI.THREE.Boolean( editor.config.getKey( 'autosave' ), 'autosave' );
+	autosave.setClass( 'title' );
 	autosave.text.setColor( '#888' );
 	autosave.onChange( function () {
 
@@ -35,11 +36,6 @@ Menubar.Status = function ( editor ) {
 		autosave.text.setTextDecoration( 'none' );
 
 	} );
-
-	var version = new UI.Text( 'r' + THREE.REVISION );
-	version.setClass( 'title' );
-	version.setOpacity( 0.5 );
-	container.add( version );
 
 	return container;
 
