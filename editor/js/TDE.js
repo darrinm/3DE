@@ -7,22 +7,26 @@ var TDE = function() {}
 // TODO: delete old files
 TDE.publish = function( projectId, title, files ) {
 
+	var publishBucket = '3de-pub';
+	// TODO: username
+	var userName = 'darrinm';
+	var publishName = userName + '/' + title;
+	var publishPath = publishBucket + '/' + publishName;
+
 	var uploads = [];
 	files.forEach( function( file ) {
 
-		// TODO: username
-		uploads.push( TDE.upload ( '3de-pub', 'darrinm' + '/' + title + '/' + file.name, file.data ) );
+		uploads.push( TDE.upload ( publishBucket, publishName + '/' + file.name, file.data ) );
 
 	} );
 
-	return Promise.all( uploads ).then( function() {
+	return Promise.all( uploads ).then( function( response ) {
 
-		// TODO: retrieve from upload process
-		var playURL = 'https://storage.googleapis.com/3de-pub/darrinm/' + title + '/index.html';
-		// TODO: png -> jpg
-		var thumbnailURL = 'https://storage.googleapis.com/3de-pub/darrinm/' + title + '/thumbnail.png';
+		var playURL = 'https://storage.googleapis.com/' + publishPath + '/index.html';
+		var thumbnailURL = 'https://storage.googleapis.com/' + publishPath + '/thumbnail.jpg';
 
-		// TODO: add to published project database
+		// Add to published project database.
+
 		var publishedRef = firebase.database().ref( 'published-projects/' + projectId );
 		var user = firebase.auth().currentUser;
 		publishedRef.set( {
