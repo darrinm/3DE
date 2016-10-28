@@ -111,12 +111,6 @@ Menubar.User = function ( editor ) {
 
 		if ( user ) {
 			// User is signed in.
-			var displayName = user.displayName;
-			var email = user.email;
-			var emailVerified = user.emailVerified;
-			var photoURL = user.photoURL;
-			var uid = user.uid;
-			var providerData = user.providerData;
 			user.getToken().then( function ( accessToken ) {
 				userUI.setValue( user.displayName || user.email );
 			});

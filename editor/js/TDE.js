@@ -8,8 +8,8 @@ var TDE = function() {}
 TDE.publish = function( projectId, title, files ) {
 
 	var publishBucket = '3de-pub';
-	// TODO: username
-	var userName = 'darrinm';
+	var user = firebase.auth().currentUser;
+	var userName = user.displayName;
 	// Remove characters that aren't URL friendly.
 	var publishName = userName + '/' + title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
 	var publishPath = publishBucket + '/' + publishName;
@@ -29,7 +29,6 @@ TDE.publish = function( projectId, title, files ) {
 		// Add to published project database.
 
 		var publishedRef = firebase.database().ref( 'published-projects/' + projectId );
-		var user = firebase.auth().currentUser;
 		publishedRef.set( {
 			"owner": user.uid,
 			"title": title,
