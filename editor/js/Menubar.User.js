@@ -110,7 +110,6 @@ Menubar.User = function ( editor ) {
 	firebase.auth().onAuthStateChanged( function ( user ) {
 
 		if ( user ) {
-			console.log( 'onAuthStateChanged user: ' + JSON.stringify( user ) );
 			// User is signed in.
 			var displayName = user.displayName;
 			var email = user.email;
@@ -119,14 +118,12 @@ Menubar.User = function ( editor ) {
 			var uid = user.uid;
 			var providerData = user.providerData;
 			user.getToken().then( function ( accessToken ) {
-				console.log( 'onAuthStateChanged token: ' + accessToken );
 				userUI.setValue( user.displayName || user.email );
 			});
 
 		} else {
 
 			// User is signed out.
-			console.log( 'onAuthStateChanged no user' );
 			userUI.setValue( 'Sign in' );
 		}
 
