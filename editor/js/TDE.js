@@ -10,7 +10,8 @@ TDE.publish = function( projectId, title, files ) {
 	var publishBucket = '3de-pub';
 	// TODO: username
 	var userName = 'darrinm';
-	var publishName = userName + '/' + title;
+	// Remove characters that aren't URL friendly.
+	var publishName = userName + '/' + title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
 	var publishPath = publishBucket + '/' + publishName;
 
 	var uploads = [];
