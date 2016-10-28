@@ -20,7 +20,7 @@ TDE.publish = function( projectId, title, files ) {
 
 	} );
 
-	return Promise.all( uploads ).then( function( response ) {
+	return Promise.all( uploads ).then( function( resources ) {
 
 		var playURL = 'https://storage.googleapis.com/' + publishPath + '/index.html';
 		var thumbnailURL = 'https://storage.googleapis.com/' + publishPath + '/thumbnail.jpg';
