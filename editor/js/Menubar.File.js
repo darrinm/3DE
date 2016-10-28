@@ -383,25 +383,58 @@ Menubar.File = function ( editor ) {
 	} );
 	options.add( option );
 
-	// Publish (Dropbox)
+	// Publish (3DE.io)
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Publish (Dropbox)' );
-	option.onClick( function () {
+	option.setTextContent( 'Publish (3DE.io)' );
+	option.onClick( function() {
 
-		gatherFiles( function ( files ) {
+		// Open the preview window now (on click event) so it won't get blocked.
+		var preview = window.open( '', 'preview' );
 
-			var saveOptions = { files: [] };
+		gatherFiles( function( files ) {
 
-			files.forEach( function ( file ) {
+			// Create a thumbnail for the project.
+			var renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true, antialias: true } );
+			renderer.setSize( 800, 600 );
+			var oldAspect = editor.camera.aspect;
+			editor.camera.aspect = 800 / 600;
+			editor.camera.updateProjectionMatrix();
+			renderer.shadowMap.enabled = true;
+			renderer.render( editor.scene, editor.camera );
+			editor.camera.aspect = oldAspect;
+			editor.camera.updateProjectionMatrix();
 
-				var url = 'data:text/plain;base64,' + window.btoa( file.data );
-				saveOptions.files.push ( { url: url, filename: editor.title + '/' + file.name } );
+			var dataURL = renderer.domElement.toDataURL( 'image/png' );
+			var image = atob( dataURL.split( ',' )[ 1 ] );
+
+			function str2ab( str ) {
+
+				var buf = new ArrayBuffer( str.length );
+				var bufView = new Uint8Array( buf );
+				for ( var i = 0, strLen = str.length; i < strLen; i ++ ) {
+
+					bufView[ i ] = str.charCodeAt( i );
+
+				}
+				return buf;
+
+			}
+
+			files.push( { name: 'thumbnail.png', data: str2ab( image ) } );
+
+			// TODO: projectId
+			TDE.publish( 'projectId', editor.title, files ).then( function( response ) {
+
+				preview.location = response;
+
+			}, function( status ) {
+
+				console.log( 'publish error status ', status );
+				preview.close();
 
 			} );
-
-			Dropbox.save( saveOptions );
 
 		} );
 
