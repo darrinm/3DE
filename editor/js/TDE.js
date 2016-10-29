@@ -31,6 +31,7 @@ TDE.publish = function( projectId, title, files ) {
 		var publishedRef = firebase.database().ref( 'published-projects/' + projectId );
 		publishedRef.set( {
 			"owner": user.uid,
+			"ownerName": userName,
 			"title": title,
 			"description": "<na>",
 			"play": playURL,

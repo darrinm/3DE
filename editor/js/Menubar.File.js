@@ -406,7 +406,7 @@ Menubar.File = function ( editor ) {
 			editor.camera.aspect = oldAspect;
 			editor.camera.updateProjectionMatrix();
 
-			var dataURL = renderer.domElement.toDataURL( 'image/png' );
+			var dataURL = renderer.domElement.toDataURL( 'image/jpeg' );
 			var image = atob( dataURL.split( ',' )[ 1 ] );
 
 			function str2ab( str ) {
@@ -422,10 +422,10 @@ Menubar.File = function ( editor ) {
 
 			}
 
-			files.push( { name: 'thumbnail.png', data: str2ab( image ) } );
+			files.push( { name: 'thumbnail.jpg', data: str2ab( image ) } );
 
 			// TODO: projectId
-			TDE.publish( 'projectId', editor.title, files ).then( function( response ) {
+			TDE.publish( 'p-' + Date.now().toString(16), editor.title, files ).then( function( response ) {
 
 				preview.location = response;
 
