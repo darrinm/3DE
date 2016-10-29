@@ -320,6 +320,7 @@ Menubar.File = function ( editor ) {
 			}
 
 			content = content.replace( '<!-- includes -->', includes.join( '\n\t\t' ) );
+			content = content.replace( '<title>three.js</title>', '<title>' + editor.title + '</title>' );
 
 			files.push( { name: 'index.html', data: content } );
 
