@@ -5,13 +5,15 @@
 var TDE = function() {}
 
 // TODO: delete old files
-TDE.publish = function( projectId, title, files ) {
+TDE.publish = function( title, files ) {
 
 	var publishBucket = '3de-pub';
 	var user = firebase.auth().currentUser;
 	var userName = user.displayName;
+
 	// Remove characters that aren't URL friendly.
-	var publishName = userName + '/' + title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
+	var safeTitle = title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
+	var publishName = userName + '/' + safeTitle;
 	var publishPath = publishBucket + '/' + publishName;
 
 	var uploads = [];
@@ -28,16 +30,16 @@ TDE.publish = function( projectId, title, files ) {
 
 		// Add to published project database.
 
-		var publishedRef = firebase.database().ref( 'published-projects/' + projectId );
+		var publishedRef = firebase.database().ref( 'published-projects/' + userName + '-' + safeTitle );
 		publishedRef.set( {
-			"owner": user.uid,
-			"ownerName": userName,
-			"title": title,
-			"description": "<na>",
-			"play": playURL,
-			"edit": "url",
-			"thumbnail": thumbnailURL,
-			"publishedOn": ( new Date ).toJSON()
+			'owner': user.uid,
+			'ownerName': userName,
+			'title': title,
+			'description': '<na>',
+			'play': playURL,
+			'edit': 'url',
+			'thumbnail': thumbnailURL,
+			'publishedOn': ( new Date ).toJSON()
 		} );
 		return playURL;
 

@@ -385,11 +385,20 @@ Menubar.File = function ( editor ) {
 	options.add( option );
 
 	// Publish (3DE.io)
-
 	var option = new UI.Row();
 	option.setClass( 'option' );
 	option.setTextContent( 'Publish (3DE.io)' );
 	option.onClick( function() {
+
+		// Must be signed in to publish.
+
+		var user = firebase.auth().currentUser;
+		if ( !user ) {
+
+			alert( 'Sign in so you can publish!' );
+			return;
+
+		}
 
 		// Open the preview window now (on click event) so it won't get blocked.
 		var preview = window.open( '', 'preview' );
@@ -397,6 +406,7 @@ Menubar.File = function ( editor ) {
 		gatherFiles( function( files ) {
 
 			// Create a thumbnail for the project.
+			// TODO: carry over settings, e.g. antialias from project
 			var renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true, antialias: true } );
 			renderer.setSize( 800, 600 );
 			var oldAspect = editor.camera.aspect;
@@ -425,8 +435,7 @@ Menubar.File = function ( editor ) {
 
 			files.push( { name: 'thumbnail.jpg', data: str2ab( image ) } );
 
-			// TODO: projectId
-			TDE.publish( 'p-' + Date.now().toString(16), editor.title, files ).then( function( response ) {
+			TDE.publish( editor.title, files ).then( function( response ) {
 
 				preview.location = response;
 
