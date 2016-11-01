@@ -105,6 +105,10 @@
 			return element.querySelector('#' + id);
 		}
 
+		function getCell(id) {
+			return getElementById(grid, 'id-' + id);
+		}
+
 		function populateCell(cell, project) {
 			var anchor = document.createElement('a');
 			anchor.href = project.play;
@@ -126,25 +130,25 @@
 		function addProject(project) {
 			var cell = document.createElement('div');
 			cell.className = 'cell';
-			cell.id = project.id;
+			cell.id = 'id-' + project.id;
 			populateCell(cell, project);
 			grid.insertBefore(cell, grid.firstChild);
 		}
 
 		function removeProject(project) {
-			var cell = getElementById(grid, project.id);
+			var cell = getCell(project.id);
 			grid.removeChild(cell);
 		}
 
 		function changeProject(project) {
-			var cell = getElementById(grid, project.id);
+			var cell = getCell(project.id);
 			cell.innerHTML = '';
 			populateCell(cell, project);
 		}
 
 		function moveProject(project, previousSibling) {
-			var cell = getElementById(grid, project.id);
-			var cellSibling = getElementById(grid, previousSibling);
+			var cell = getCell(project.id);
+			var cellSibling = getCell(previousSibling);
 			if (cellSibling)
 				grid.insertBefore(cell, cellSibling);
 		}
