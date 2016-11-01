@@ -8,7 +8,7 @@
 
 ## Run
 ```bash
-cd editor
+cd src
 live-server
 ```
 

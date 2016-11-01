@@ -32,7 +32,7 @@ by values set in a '.env' file (if it exists), and in turn by those set in a
 file specified by the '--config-file' option."
 
 if [ -z "${GIT_DEPLOY_DIR}" ]; then
-    GIT_DEPLOY_DIR="editor"
+    GIT_DEPLOY_DIR="src"
 fi
 PROJ_DIR="$(cd "$(cd "${0%/*}" && echo $PWD)/.." && echo $PWD)"
 cd "$PROJ_DIR"
