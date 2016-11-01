@@ -98,6 +98,16 @@ input.Number {
 		text-align: right;
 	}
 
+		#menubar .menu .logo {
+			font-family: Verdana;
+			display: inline-block;
+			color: #000;
+			margin: 0;
+			padding: 2px 8px;
+			font-size: x-large;
+			cursor: pointer;
+		}
+
 		#menubar .menu .title {
 			display: inline-block;
 			color: #888;

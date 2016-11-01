@@ -1,8 +1,4 @@
-#menubar .menu .logo {
-    display: inline-block;
-    color: #000;
-    margin: 0;
-    padding: 2px 8px;
-    font-size: x-large;
-    cursor: pointer;
+body {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: medium;
 }

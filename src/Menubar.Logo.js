@@ -9,11 +9,12 @@ Menubar.Logo = function ( editor ) {
 
 	var logo = new UI.Text( '3DE' );
 	logo.setClass( 'logo' );
+	logo.dom.style.cursor = 'pointer';
 	container.add( logo );
 
 	logo.onClick( function () {
 
-		window.location = 'index.html';
+		window.location = '/index.html';
 
 	});
 

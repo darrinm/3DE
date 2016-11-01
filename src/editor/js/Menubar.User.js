@@ -37,8 +37,8 @@ Menubar.User = function ( editor ) {
 
 			modalContainer = document.createElement( 'div' );
 			modalContainer.id = 'firebaseui-auth-container';
-			modalContainer.style.cssText = 'margin-top: 50px';
-			document.body.appendChild( modalContainer );
+			modalContainer.style.cssText = 'position: absolute; left: 0; right: 0; margin-top: 50px; margin-left: auto; margin-right: auto; width: 400px';
+			document.body.insertBefore( modalContainer, document.body.firstChild );
 
 			var removeOverlay = function () {
 
