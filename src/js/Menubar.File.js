@@ -435,7 +435,7 @@ Menubar.File = function ( editor ) {
 
 			files.push( { name: 'thumbnail.jpg', data: str2ab( image ) } );
 
-			TDE.publish( editor.title, files ).then( function( response ) {
+			TDE.publish( editor.projectId, editor.title, files ).then( function( response ) {
 
 				preview.location = response;
 

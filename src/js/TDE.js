@@ -5,7 +5,7 @@
 var TDE = function() {}
 
 // TODO: delete old files
-TDE.publish = function( title, files ) {
+TDE.publish = function( projectId, title, files ) {
 
 	var publishBucket = '3de-pub';
 	var user = firebase.auth().currentUser;
@@ -30,14 +30,13 @@ TDE.publish = function( title, files ) {
 
 		// Add to published project database.
 
-		var publishedRef = firebase.database().ref( 'published-projects/' + userName + '-' + safeTitle );
+		var publishedRef = firebase.database().ref( 'published-projects/' + projectId );
 		publishedRef.set( {
 			'owner': user.uid,
 			'ownerName': userName,
 			'title': title,
 			'description': '<na>',
 			'play': playURL,
-			'edit': 'url',
 			'thumbnail': thumbnailURL,
 			'publishedOn': ( new Date ).toJSON()
 		} );

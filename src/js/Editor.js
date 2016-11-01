@@ -82,6 +82,7 @@ var Editor = function () {
 
 	};
 
+	this.projectId = THREE.Math.generateUUID();
 	this.config = new Config( 'threejs-editor' );
 	this.history = new History( this );
 	this.storage = new Storage();
@@ -420,6 +421,7 @@ Editor.prototype = {
 
 	clear: function () {
 		this.setTitle( 'Untitled' );
+		this.projectId = THREE.Math.generateUUID();
 
 		this.history.clear();
 		this.storage.clear();
@@ -471,6 +473,23 @@ Editor.prototype = {
 
 		if ( json.metadata && json.metadata.title )
 			this.setTitle( json.metadata.title );
+
+		if ( json.project ) {
+			if ( json.project.id )
+				this.projectId = json.project.id;
+			this.config.setKey( 'project/id', this.projectId );
+
+			if ( json.project.gammaInput )
+				this.config.setKey( 'project/renderer/gammaInput', json.project.gammaInput );
+			if ( json.project.gammOutput )
+				this.config.setKey( 'project/renderer/gammaOutput', json.project.gammaOutput );
+			if (json.project.shadows)
+				this.config.setKey( 'project/renderer/shadows', json.project.shadows );
+			if ( json.project.editable )
+				this.config.setKey( 'project/editable', json.project.editable );
+			if ( json.project.vr )
+				this.config.setKey( 'project/vr', json.project.vr )
+		}
 
 		var camera = loader.parse( json.camera );
 

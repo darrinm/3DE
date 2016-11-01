@@ -130,6 +130,20 @@ Sidebar.Project = function ( editor ) {
 
 	container.add( vrRow );
 
+	// uuid
+
+	// TODO: format better
+	// TODO: update on project change
+	var objectUUIDRow = new UI.Row();
+	var objectUUID = new UI.Text();
+	objectUUID.setValue( config.getKey( 'project/id' ) );
+
+	objectUUIDRow.add( new UI.Text( 'UUID' ).setWidth( '90px' ) );
+	objectUUIDRow.add( objectUUID );
+
+	container.add( objectUUIDRow );
+
+
 	//
 
 	function updateRenderer() {
