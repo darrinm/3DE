@@ -1,2 +1,3 @@
-grep -o '../examples/js[^"]*' editor/index.html | xargs -I {} cp -v ../three.js/examples/{} editor/deps
-cp -v ../three.js/build/three*.js editor
+# Must be run from project root (e.g. not src dir)
+grep -o '../examples/js[^"]*' src/editor.html | xargs -I {} cp -v ../three.js/examples/{} src/deps
+cp -v ../three.js/build/three*.js src
