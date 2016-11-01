@@ -1,0 +1,109 @@
+<html>
+
+<head>
+	<title>3DE Gallery</title>
+
+	<style>
+		.grid-container {
+			margin: 0 auto;
+			padding: 0 1rem;
+		}
+
+		.grid {
+			display: flex;
+			flex-wrap: wrap;
+			flex-direction: row;
+		}
+
+		.cell {
+			position: relative;
+			margin: 4px;
+		}
+
+		.cell img {
+			display: block;
+		}
+
+		.project-title {
+			pointer-events: none;
+			color: white;
+			position: absolute;
+			padding: 8px;
+			bottom: 0px;
+			left: 0px;
+		}
+
+		.project-owner {
+			color: white;
+			padding: 8px;
+			position: absolute;
+			bottom: 0px;
+			right: 0px;
+			text-align: right;
+			opacity: 0.5;
+		}
+	</style>
+
+</head>
+
+<body>
+	<link type="text/css" rel="stylesheet" href="editor/css/main.css"/>
+	<link type="text/css" rel="stylesheet" href="main.css"/>
+	<link id="theme" type="text/css" rel="stylesheet" href="editor/css/light.css" />
+	<script src="editor/js/libs/ui.js"></script>
+	<script src="Menubar.js"></script>
+	<script src="Menubar.Logo.js"></script>
+	<script src="editor/js/Menubar.User.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/3.5.1/firebase.js"></script>
+	<script src="editor/deps/firebase-ui-auth.js"></script>
+	<script src="main.js"></script>
+	<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/live/0.5/firebase-ui-auth.css" />
+
+	<div style="height: 32px;"></div>
+	<div id='publishedProjects' class='grid-container'>
+		<div id='projectGrid' class='grid'>
+		</div>
+	</div>
+
+	<script>
+		var waits = [ 'Loading...', 'Fetching...', 'Just a sec...', 'Hold your horses...', 'Wait...', 'Almost there...', 'Any minute now...', 'Please wait...' ];
+		var wait = waits[Math.floor(Math.random() * waits.length)];
+		document.getElementById('projectGrid').innerHTML = wait;
+
+		var database = firebase.database();
+
+		var publishedProjectsRef = database.ref('published-projects');
+		publishedProjectsRef.on('value', function (snapshot) {
+			updatePublishedProjects(snapshot.val());
+		});
+
+		function updatePublishedProjects(publishedProjects) {
+			var grid = document.getElementById('projectGrid')
+			grid.innerHTML = '';
+
+			for (var projectName in publishedProjects) {
+				var project = publishedProjects[projectName];
+				var cell = document.createElement('div');
+				cell.className = 'cell';
+				var anchor = document.createElement('a');
+				anchor.href = project.play;
+				var img = document.createElement('img');
+				img.src = project.thumbnail;
+				img.width = 400;
+				anchor.appendChild(img);
+				cell.appendChild(anchor);
+				var title = document.createElement('div');
+				title.className = 'project-title';
+				title.innerHTML = project.title;
+				cell.appendChild(title);
+				var owner = document.createElement('div');
+				owner.className = 'project-owner';
+				owner.innerHTML = project.ownerName;
+				cell.appendChild(owner);
+				grid.insertBefore(cell, grid.childNodes[0]);
+			}
+		}
+	</script>
+</body>
+
+</html>

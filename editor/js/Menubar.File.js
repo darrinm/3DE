@@ -283,12 +283,9 @@ Menubar.File = function ( editor ) {
 
 	// Publish
 
-	var option = new UI.Row();
-	option.setClass( 'option' );
-	option.setTextContent( 'Publish' );
-	option.onClick( function () {
+	var gatherFiles = function ( onGathered ) {
 
-		var zip = new JSZip();
+		var files = [];
 
 		//
 
@@ -301,14 +298,12 @@ Menubar.File = function ( editor ) {
 		output = JSON.stringify( output, null, '\t' );
 		output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
 
-		zip.file( 'app.json', output );
+		files.push( { name: 'app.json', data: output } );
 
 		//
 
 		var manager = new THREE.LoadingManager( function () {
-
-			save( zip.generate( { type: 'blob' } ), 'download.zip' );
-
+			onGathered( files );
 		} );
 
 		var loader = new THREE.XHRLoader( manager );
@@ -325,60 +320,133 @@ Menubar.File = function ( editor ) {
 			}
 
 			content = content.replace( '<!-- includes -->', includes.join( '\n\t\t' ) );
+			content = content.replace( '<title>three.js</title>', '<title>' + editor.title + '</title>' );
 
-			zip.file( 'index.html', content );
+			files.push( { name: 'index.html', data: content } );
 
 		} );
+
 		loader.load( 'js/libs/app.js', function ( content ) {
 
-			zip.file( 'js/app.js', content );
+			files.push( { name: 'js/app.js', data: content } );
 
 		} );
-		loader.load( '../build/three.min.js', function ( content ) {
 
-			zip.file( 'js/three.min.js', content );
+		loader.load( 'three.min.js', function ( content ) {
+
+			files.push( { name: 'js/three.min.js', data: content } );
 
 		} );
 
 		if ( vr ) {
 
-			loader.load( '../examples/js/controls/VRControls.js', function ( content ) {
+			loader.load( 'deps/VRControls.js', function ( content ) {
 
-				zip.file( 'js/VRControls.js', content );
-
-			} );
-
-			loader.load( '../examples/js/effects/VREffect.js', function ( content ) {
-
-				zip.file( 'js/VREffect.js', content );
+				files.push( { name: 'js/VRControls.js', data: content } );
 
 			} );
 
-			loader.load( '../examples/js/WebVR.js', function ( content ) {
+			loader.load( 'deps/VREffect.js', function ( content ) {
 
-				zip.file( 'js/WebVR.js', content );
+				files.push( { name: 'js/VREffect.js', data: content } );
+
+			} );
+
+			loader.load( 'deps/WebVR.js', function ( content ) {
+
+				files.push( { name: 'js/WebVR.js', data: content } );
 
 			} );
 
 		}
 
-	} );
-	options.add( option );
-
-	// Publish (Dropbox)
+	}
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Publish (Dropbox)' );
+	option.setTextContent( 'Publish' );
 	option.onClick( function () {
 
-		var parameters = {
-			files: [
-				{ 'url': 'data:text/plain;base64,' + window.btoa( "Hello, World" ), 'filename': 'app/test.txt' }
-			]
-		};
+		gatherFiles( function ( files ) {
 
-		Dropbox.save( parameters );
+			var zip = new JSZip();
+
+			files.forEach( function ( file ) {
+
+				zip.file( file.name, file.data );
+
+			} );
+
+			save( zip.generate( { type: 'blob' } ), 'download.zip' );
+
+		} );
+
+	} );
+	options.add( option );
+
+	// Publish (3DE.io)
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'Publish (3DE.io)' );
+	option.onClick( function() {
+
+		// Must be signed in to publish.
+
+		var user = firebase.auth().currentUser;
+		if ( !user ) {
+
+			alert( 'Sign in so you can publish!' );
+			return;
+
+		}
+
+		// Open the preview window now (on click event) so it won't get blocked.
+		var preview = window.open( '', 'preview' );
+
+		gatherFiles( function( files ) {
+
+			// Create a thumbnail for the project.
+			// TODO: carry over settings, e.g. antialias from project
+			var renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true, antialias: true } );
+			renderer.setSize( 800, 600 );
+			var oldAspect = editor.camera.aspect;
+			editor.camera.aspect = 800 / 600;
+			editor.camera.updateProjectionMatrix();
+			renderer.shadowMap.enabled = true;
+			renderer.render( editor.scene, editor.camera );
+			editor.camera.aspect = oldAspect;
+			editor.camera.updateProjectionMatrix();
+
+			var dataURL = renderer.domElement.toDataURL( 'image/jpeg' );
+			var image = atob( dataURL.split( ',' )[ 1 ] );
+
+			function str2ab( str ) {
+
+				var buf = new ArrayBuffer( str.length );
+				var bufView = new Uint8Array( buf );
+				for ( var i = 0, strLen = str.length; i < strLen; i ++ ) {
+
+					bufView[ i ] = str.charCodeAt( i );
+
+				}
+				return buf;
+
+			}
+
+			files.push( { name: 'thumbnail.jpg', data: str2ab( image ) } );
+
+			TDE.publish( editor.title, files ).then( function( response ) {
+
+				preview.location = response;
+
+			}, function( status ) {
+
+				console.log( 'publish error status ', status );
+				preview.close();
+
+			} );
+
+		} );
 
 	} );
 	options.add( option );

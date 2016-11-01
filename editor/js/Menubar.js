@@ -7,6 +7,7 @@ var Menubar = function ( editor ) {
 	var container = new UI.Panel();
 	container.setId( 'menubar' );
 
+	container.add( new Menubar.Logo( editor ) );
 	container.add( new Menubar.File( editor ) );
 	container.add( new Menubar.Edit( editor ) );
 	container.add( new Menubar.Add( editor ) );
@@ -15,7 +16,8 @@ var Menubar = function ( editor ) {
 	container.add( new Menubar.Examples( editor ) );
 	container.add( new Menubar.Help( editor ) );
 
-	container.add( new Menubar.Status( editor ) );
+	//container.add( new Menubar.Status( editor ) );
+	container.add( new Menubar.User( editor ) );
 
 	container.add( new Menubar.Title( editor ) );
 
