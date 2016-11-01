@@ -4,6 +4,36 @@
 
 var TDE = function() {}
 
+TDE.save = function (projectId, title, serializedProject ) {
+
+	var user = firebase.auth().currentUser;
+	var userName = user.displayName;
+
+	// Create a thumbnail.
+	// Save the project.
+
+	var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
+	return fileRef.putString( serializedProject ).then( function( snapshot ) {
+
+		// Save the thumbnail.
+
+		// Add the project to the database.
+
+		var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
+		return projectRef.set( {
+			'owner': user.uid,
+			'ownerName': userName,
+			'title': title,
+			'description': '<na>',
+	// TODO:			'thumbnail': thumbnailURL,
+	// TODO:			'created': ?,
+			'modified': ( new Date ).toJSON()
+		} );
+
+	} );
+
+}
+
 // TODO: delete old files
 TDE.publish = function( projectId, title, files ) {
 

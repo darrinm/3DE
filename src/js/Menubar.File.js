@@ -32,11 +32,85 @@ Menubar.File = function ( editor ) {
 	} );
 	options.add( option );
 
-	// Open (Dropbox)
+	function getSerializedProject() {
+		var output = editor.toJSON();
+		output.metadata.type = 'App';
+		delete output.history;
+
+		output = JSON.stringify( output, null, '\t' );
+		output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
+		return output;
+	}
+
+	// Save (3DE.io)
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Open (Dropbox)...' );
+	option.setTextContent( 'Save (3DE.io)...' );
+	option.onClick( function () {
+
+		var output = getSerializedProject();
+
+		// TODO: saving/saved indicator
+		// TODO: error handling
+		TDE.save( editor.projectId, editor.title, output ).then (function() {
+			console.log( 'saved ' + editor.title );
+		},
+		function() {
+			console.log( 'failed to save ' + editor.title );
+		} );
+	} );
+	options.add( option );
+
+	// Save (Dropbox)
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'Save (Dropbox)...' );
+	option.onClick( function () {
+
+		var output = getSerializedProject();
+
+		var parameters = {
+			files: [
+				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': editor.title + '.3de' }
+			]
+		};
+
+		Dropbox.save( parameters );
+	} );
+	options.add( option );
+
+	//
+
+	options.add( new UI.HorizontalRule() );
+
+	// Import
+
+	var fileInput = document.createElement( 'input' );
+	fileInput.type = 'file';
+	fileInput.addEventListener( 'change', function ( event ) {
+
+		editor.loader.loadFile( fileInput.files[ 0 ] );
+
+	} );
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'Import...' );
+	option.onClick( function () {
+
+		fileInput.click();
+
+	} );
+	options.add( option );
+
+	// Import (Dropbox)
+	// TODO: just call editor.loader.loadFile?
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'Import (Dropbox)...' );
 	option.onClick( function () {
 
 		if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
@@ -82,54 +156,6 @@ Menubar.File = function ( editor ) {
 			Dropbox.choose( chooseOptions );
 
 		}
-
-	} );
-	options.add( option );
-
-	// Save (Dropbox)
-
-	var option = new UI.Row();
-	option.setClass( 'option' );
-	option.setTextContent( 'Save (Dropbox)...' );
-	option.onClick( function () {
-
-		var output = editor.toJSON();
-		output.metadata.type = 'App';
-		delete output.history;
-
-		output = JSON.stringify( output, null, '\t' );
-		output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
-
-		var parameters = {
-			files: [
-				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': editor.title + '.3de' }
-			]
-		};
-
-		Dropbox.save( parameters );
-	} );
-	options.add( option );
-
-	//
-
-	options.add( new UI.HorizontalRule() );
-
-	// Import
-
-	var fileInput = document.createElement( 'input' );
-	fileInput.type = 'file';
-	fileInput.addEventListener( 'change', function ( event ) {
-
-		editor.loader.loadFile( fileInput.files[ 0 ] );
-
-	} );
-
-	var option = new UI.Row();
-	option.setClass( 'option' );
-	option.setTextContent( 'Import...' );
-	option.onClick( function () {
-
-		fileInput.click();
 
 	} );
 	options.add( option );
@@ -289,15 +315,9 @@ Menubar.File = function ( editor ) {
 
 		//
 
-		var output = editor.toJSON();
-		output.metadata.type = 'App';
-		delete output.history;
+		var vr =  editor.config.getKey( 'project/vr' );
 
-		var vr = output.project.vr;
-
-		output = JSON.stringify( output, null, '\t' );
-		output = output.replace( /[\n\t]+([\d\.e\-\[\]]+)/g, '$1' );
-
+		var output = getSerializedProject();
 		files.push( { name: 'app.json', data: output } );
 
 		//
@@ -364,7 +384,7 @@ Menubar.File = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Publish' );
+	option.setTextContent( 'Publish (Download)' );
 	option.onClick( function () {
 
 		gatherFiles( function ( files ) {
