@@ -14,7 +14,7 @@ Menubar.Logo = function ( editor ) {
 
 	logo.onClick( function () {
 
-		window.location = '/index.html';
+		window.location = 'index.html';
 
 	});
 
