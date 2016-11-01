@@ -1,5 +1,5 @@
 /**
- * @author mrdoob / http://mrdoob.com/
+ * @author darrinm / http://darrin.massena.com/
  */
 
 Menubar.Title = function ( editor ) {

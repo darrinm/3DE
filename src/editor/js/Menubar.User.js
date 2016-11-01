@@ -1,5 +1,5 @@
 /**
- * @author mrdoob / http://mrdoob.com/
+ * @author darrinm / http://darrin.massena.com/
  */
 
 Menubar.User = function ( editor ) {
@@ -11,7 +11,7 @@ Menubar.User = function ( editor ) {
 	var container = new UI.Panel();
 	container.setClass( 'menu right' );
 
-	var userUI = new UI.Text( '<user>' );
+	var userUI = new UI.Text( '' );
 	userUI.setClass( 'title' );
 	userUI.dom.style.cursor = 'pointer';
 	container.add( userUI );
