@@ -69,39 +69,88 @@
 		var waits = [ 'Loading...', 'Fetching...', 'Just a sec...', 'Hold your horses...', 'Wait...', 'Almost there...', 'Any minute now...', 'Please wait...' ];
 		var wait = waits[Math.floor(Math.random() * waits.length)];
 		document.getElementById('projectGrid').innerHTML = wait;
+		var waiting = true;
 
 		var database = firebase.database();
+		var grid = document.getElementById('projectGrid');
 
-		var publishedProjectsRef = database.ref('published-projects');
-		publishedProjectsRef.on('value', function (snapshot) {
-			updatePublishedProjects(snapshot.val());
+		var publishedProjectsRef = database.ref('published-projects').orderByChild('publishedOn');
+		publishedProjectsRef.on('child_added', function (snapshot) {
+			if (waiting) {
+				waiting = false;
+				grid.innerHTML = '';
+			}
+			addProject(projectFromSnapshot(snapshot));
 		});
 
-		function updatePublishedProjects(publishedProjects) {
-			var grid = document.getElementById('projectGrid')
-			grid.innerHTML = '';
+		publishedProjectsRef.on('child_removed', function (snapshot) {
+			removeProject(projectFromSnapshot(snapshot));
+		});
 
-			for (var projectName in publishedProjects) {
-				var project = publishedProjects[projectName];
-				var cell = document.createElement('div');
-				cell.className = 'cell';
-				var anchor = document.createElement('a');
-				anchor.href = project.play;
-				var img = document.createElement('img');
-				img.src = project.thumbnail;
-				img.width = 400;
-				anchor.appendChild(img);
-				cell.appendChild(anchor);
-				var title = document.createElement('div');
-				title.className = 'project-title';
-				title.innerHTML = project.title;
-				cell.appendChild(title);
-				var owner = document.createElement('div');
-				owner.className = 'project-owner';
-				owner.innerHTML = project.ownerName;
-				cell.appendChild(owner);
-				grid.insertBefore(cell, grid.childNodes[0]);
-			}
+		publishedProjectsRef.on('child_changed', function (snapshot) {
+			changeProject(projectFromSnapshot(snapshot));
+		});
+
+		publishedProjectsRef.on('child_moved', function (snapshot, previousSibling) {
+			moveProject(projectFromSnapshot(snapshot), previousSibling);
+		});
+
+		function projectFromSnapshot(snapshot) {
+			var project = snapshot.val();
+			project.id = snapshot.key;
+			return project;
+		}
+
+		function getElementById(element, id) {
+			return element.querySelector('#' + id);
+		}
+
+		function getCell(id) {
+			return getElementById(grid, 'id-' + id);
+		}
+
+		function populateCell(cell, project) {
+			var anchor = document.createElement('a');
+			anchor.href = project.play;
+			var img = document.createElement('img');
+			img.src = project.thumbnail;
+			img.width = 400;
+			anchor.appendChild(img);
+			cell.appendChild(anchor);
+			var title = document.createElement('div');
+			title.className = 'project-title';
+			title.innerHTML = project.title;
+			cell.appendChild(title);
+			var owner = document.createElement('div');
+			owner.className = 'project-owner';
+			owner.innerHTML = project.ownerName;
+			cell.appendChild(owner);
+		}
+
+		function addProject(project) {
+			var cell = document.createElement('div');
+			cell.className = 'cell';
+			cell.id = 'id-' + project.id;
+			populateCell(cell, project);
+			grid.insertBefore(cell, grid.firstChild);
+		}
+
+		function removeProject(project) {
+			var cell = getCell(project.id);
+			grid.removeChild(cell);
+		}
+
+		function changeProject(project) {
+			var cell = getCell(project.id);
+			cell.innerHTML = '';
+			populateCell(cell, project);
+		}
+
+		function moveProject(project, previousSibling) {
+			var cell = getCell(project.id);
+			var cellSibling = getCell(previousSibling);
+			if (cellSibling)
+				grid.insertBefore(cell, cellSibling);
 		}
 	</script>
 </body>
