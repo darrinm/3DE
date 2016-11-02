@@ -1,3 +1,43 @@
 body {
 	font-family: Helvetica, Arial, sans-serif;
 }
+
+.grid-container {
+	margin: 0 auto;
+	padding: 0 1rem;
+}
+
+.grid {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+}
+
+.cell {
+	position: relative;
+	margin: 4px;
+}
+
+.cell img {
+	display: block;
+}
+
+.project-title {
+	pointer-events: none;
+	color: white;
+	position: absolute;
+	padding: 8px;
+	bottom: 0px;
+	left: 0px;
+}
+
+.project-owner {
+	color: white;
+	padding: 8px;
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	text-align: right;
+	opacity: 0.5;
+}
+

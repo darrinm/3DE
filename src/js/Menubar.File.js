@@ -426,34 +426,9 @@ Menubar.File = function ( editor ) {
 		gatherFiles( function( files ) {
 
 			// Create a thumbnail for the project.
-			// TODO: carry over settings, e.g. antialias from project
-			var renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true, antialias: true } );
-			renderer.setSize( 800, 600 );
-			var oldAspect = editor.camera.aspect;
-			editor.camera.aspect = 800 / 600;
-			editor.camera.updateProjectionMatrix();
-			renderer.shadowMap.enabled = true;
-			renderer.render( editor.scene, editor.camera );
-			editor.camera.aspect = oldAspect;
-			editor.camera.updateProjectionMatrix();
+			var image = TDE.createThumbnail( editor );
 
-			var dataURL = renderer.domElement.toDataURL( 'image/jpeg' );
-			var image = atob( dataURL.split( ',' )[ 1 ] );
-
-			function str2ab( str ) {
-
-				var buf = new ArrayBuffer( str.length );
-				var bufView = new Uint8Array( buf );
-				for ( var i = 0, strLen = str.length; i < strLen; i ++ ) {
-
-					bufView[ i ] = str.charCodeAt( i );
-
-				}
-				return buf;
-
-			}
-
-			files.push( { name: 'thumbnail.jpg', data: str2ab( image ) } );
+			files.push( { name: 'thumbnail.jpg', data: image } );
 
 			TDE.publish( editor.projectId, editor.title, files ).then( function( response ) {
 

@@ -15,19 +15,25 @@ TDE.save = function( projectId, title, serializedProject ) {
 	var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
 	return fileRef.putString( serializedProject ).then( function( snapshot ) {
 
-		// Save the thumbnail.
+		// Save a thumbnail.
 
-		// Add the project to the database.
+		var image = TDE.createThumbnail( editor );
+		var thumbRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'thumbnail.jpg' );
+		return thumbRef.put( image ).then( function( snapshot ) {
 
-		var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
-		return projectRef.set( {
-			'owner': user.uid,
-			'ownerName': userName,
-			'title': title,
-			'description': '<na>',
-	// TODO:			'thumbnail': thumbnailURL,
-	// TODO:			'created': ?,
-			'modified': ( new Date ).toJSON()
+			// Add the project to the database.
+
+			var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
+			return projectRef.set( {
+				'owner': user.uid,
+				'ownerName': userName,
+				'title': title,
+				'description': '<na>',
+				'thumbnail': thumbRef.fullPath,
+		// TODO:			'created': ?,
+				'modified': ( new Date ).toJSON()
+			} );
+
 		} );
 
 	} );
@@ -167,4 +173,36 @@ TDE.upload = function( bucket, object, data ) {
 
 }
 
+// Create a thumbnail image for the project. Return in an ArrayBuffer.
 
+TDE.createThumbnail = function( editor ) {
+
+	// TODO: carry over settings, e.g. antialias from project
+	var renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true, antialias: true } );
+	renderer.setSize( 800, 600 );
+	var oldAspect = editor.camera.aspect;
+	editor.camera.aspect = 800 / 600;
+	editor.camera.updateProjectionMatrix();
+	renderer.shadowMap.enabled = true;
+	renderer.render( editor.scene, editor.camera );
+	editor.camera.aspect = oldAspect;
+	editor.camera.updateProjectionMatrix();
+
+	var dataURL = renderer.domElement.toDataURL( 'image/jpeg' );
+	var image = atob( dataURL.split( ',' )[ 1 ] );
+
+	function arrayBufferFromString( str ) {
+
+		var buf = new ArrayBuffer( str.length );
+		var bufView = new Uint8Array( buf );
+		for ( var i = 0, strLen = str.length; i < strLen; i ++ ) {
+
+			bufView[ i ] = str.charCodeAt( i );
+
+		}
+		return buf;
+
+	}
+
+	return arrayBufferFromString( image );
+}
