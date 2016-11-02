@@ -4,7 +4,7 @@
 
 var TDE = function() {}
 
-TDE.save = function (projectId, title, serializedProject ) {
+TDE.save = function( projectId, title, serializedProject ) {
 
 	var user = firebase.auth().currentUser;
 	var userName = user.displayName;
@@ -28,6 +28,28 @@ TDE.save = function (projectId, title, serializedProject ) {
 	// TODO:			'thumbnail': thumbnailURL,
 	// TODO:			'created': ?,
 			'modified': ( new Date ).toJSON()
+		} );
+
+	} );
+
+}
+
+TDE.load = function( projectId ) {
+
+	var user = firebase.auth().currentUser;
+	var userName = user.displayName;
+
+	var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
+	return fileRef.getDownloadURL().then( function( url ) {
+
+		var manager = new THREE.LoadingManager( function () {} );
+
+		var loader = new THREE.XHRLoader( manager );
+		loader.load( url, function ( content ) {
+
+			editor.clear();
+			editor.fromJSON( JSON.parse( content ) );
+
 		} );
 
 	} );

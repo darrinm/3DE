@@ -164,6 +164,7 @@
 
 		<script src="https://www.gstatic.com/firebasejs/3.5.1/firebase.js"></script>
 		<script>
+			// TODO: remove duplication WRT this and main.js
 			var config = {
 				apiKey: "AIzaSyDWsSmYFq_oTrmFar-vkJ7XFAKmPlLP_zs",
 				authDomain: "de-io-3a257.firebaseapp.com",
@@ -425,6 +426,14 @@
 						console.log( 'Unknown template ' + template );
 						break;
 				}
+
+				isLoadingFromHash = true;
+
+			} else if ( hash.substr( 1, 5 ) === 'load=' ) {
+
+				editor.clear();
+
+				editor.pendingProject = hash.substr( 6 );
 
 				isLoadingFromHash = true;
 

@@ -115,6 +115,13 @@ Menubar.User = function ( editor ) {
 				userUI.setValue( user.displayName || user.email );
 			});
 
+			if ( editor.pendingProject ) {
+
+				TDE.load( editor.pendingProject );
+				editor.pendingProject = null;
+
+			}
+
 		} else {
 
 			// User is signed out.
