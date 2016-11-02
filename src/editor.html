@@ -219,7 +219,14 @@
 
 				editor.storage.get( function ( state ) {
 
-					if ( isLoadingFromHash ) return;
+					if ( isLoadingFromHash ) {
+
+						// Hash argument handling happens before storage is initialized and state
+						// saving is hooked up. Yet it makes important state changes we want preserved.
+						saveState();
+						return;
+
+					}
 
 					if ( state !== undefined ) {
 
@@ -335,10 +342,12 @@
 						if ( event.ctrlKey && event.shiftKey ) {
 
 							editor.redo();
+							event.preventDefault(); // prevent browser from doing something
 
 						} else if ( event.ctrlKey ) {
 
 							editor.undo();
+							event.preventDefault(); // prevent browser from doing something
 
 						}
 
@@ -381,6 +390,9 @@
 			var isLoadingFromHash = false;
 			var hash = window.location.hash;
 
+			// Remove the hash from the URL.
+			history.replaceState( "", document.title, window.location.pathname + window.location.search );
+
 			if ( hash.substr( 1, 5 ) === 'file=' ) {
 
 				var file = hash.substr( 6 );
@@ -399,6 +411,22 @@
 					isLoadingFromHash = true;
 
 				}
+
+			} else if ( hash.substr( 1, 4 ) === 'new=' ) {
+
+				editor.clear();
+
+				var template = hash.substr( 5 );
+				switch (template) {
+					case 'blank':
+						break;
+
+					default:
+						console.log( 'Unknown template ' + template );
+						break;
+				}
+
+				isLoadingFromHash = true;
 
 			}
 
