@@ -10,17 +10,24 @@
 	<link id="theme" type="text/css" rel="stylesheet" href="css/light.css"/>
 
 	<div style="height: 32px;"></div>
-	<a href='gallery.html'>Gallery</a><br>
-	<a href='editor.html'>Editor</a>
+	<a href='gallery.html'>Gallery</a> |
+	<a href='editor.html#new=blank'>New Project</a> |
+	<a href='editor.html'>Continue Editing</a>
+	<p>
+	<h4>My Projects</h4>
+	<div id='myProjects' class='grid-container'>
+		<div id='projectGrid' class='grid'>
+		</div>
+	</div>
 	<pre>
-* sign in/up
 - inspiration
   - gallery
   - users
 - what's new
-- my recent projects
+- my projects
 - activity feed?
-- create project
+* sign in/up
+* new project
 	</pre>
 
 	<script src="js/libs/ui.js"></script>
@@ -31,6 +38,101 @@
 	<script src="deps/firebase-ui-auth.js"></script>
 	<script src="main.js"></script>
 	<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/live/0.5/firebase-ui-auth.css"/>
+
+	<script>
+		firebase.auth().onAuthStateChanged(function (user) {
+			if (!user) {
+				document.getElementById('projectGrid').innerHTML = '';
+				return;
+			}
+
+			var waits = [ 'Loading...', 'Fetching...', 'Just a sec...', 'Hold your horses...', 'Wait...', 'Almost there...', 'Any minute now...', 'Please wait...' ];
+			var wait = waits[Math.floor(Math.random() * waits.length)];
+			document.getElementById('projectGrid').innerHTML = wait;
+			var waiting = true;
+
+			var database = firebase.database();
+			var grid = document.getElementById('projectGrid');
+
+			var projectsRef = database.ref('projects/' + user.uid).orderByChild('modified');
+			projectsRef.on('child_added', function (snapshot) {
+				if (waiting) {
+					waiting = false;
+					grid.innerHTML = '';
+				}
+				addProject(projectFromSnapshot(snapshot));
+			});
+
+			projectsRef.on('child_removed', function (snapshot) {
+				removeProject(projectFromSnapshot(snapshot));
+			});
+
+			projectsRef.on('child_changed', function (snapshot) {
+				changeProject(projectFromSnapshot(snapshot));
+			});
+
+			projectsRef.on('child_moved', function (snapshot, previousSibling) {
+				moveProject(projectFromSnapshot(snapshot), previousSibling);
+			});
+
+			function projectFromSnapshot(snapshot) {
+				var project = snapshot.val();
+				project.id = snapshot.key;
+				return project;
+			}
+
+			function getElementById(element, id) {
+				return element.querySelector('#' + id);
+			}
+
+			function getCell(id) {
+				return getElementById(grid, 'id-' + id);
+			}
+
+			function populateCell(cell, project) {
+				var anchor = document.createElement('a');
+				anchor.href = project.play;
+	/*			var img = document.createElement('img');
+				img.src = project.thumbnail;
+				img.width = 400;
+				anchor.appendChild(img);
+	*/
+				cell.appendChild(anchor);
+				var title = document.createElement('div');
+				title.className = 'project-title';
+				title.innerHTML = project.title;
+				cell.appendChild(title);
+			}
+
+			function addProject(project) {
+				var cell = document.createElement('div');
+				cell.className = 'cell';
+				cell.id = 'id-' + project.id;
+				populateCell(cell, project);
+				grid.insertBefore(cell, grid.firstChild);
+			}
+
+			function removeProject(project) {
+				var cell = getCell(project.id);
+				grid.removeChild(cell);
+			}
+
+			function changeProject(project) {
+				var cell = getCell(project.id);
+				cell.innerHTML = '';
+				populateCell(cell, project);
+			}
+
+			function moveProject(project, previousSibling) {
+				var cell = getCell(project.id);
+				var cellSibling = getCell(previousSibling);
+				if (cellSibling)
+					grid.insertBefore(cell, cellSibling);
+			}
+
+		});
+	</script>
+
 </body>
 
 </html>
