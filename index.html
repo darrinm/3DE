@@ -92,8 +92,20 @@
 			function populateCell(cell, project) {
 				var anchor = document.createElement('a');
 				anchor.href = 'editor.html#load=' + project.id;
-				anchor.text = project.title;
+				var img = document.createElement('img');
+				img.width = 400;
+				if (project.thumbnail) {
+					var thumbnailRef = firebase.storage().ref(project.thumbnail);
+					thumbnailRef.getDownloadURL().then(function (url) {
+						img.src = url;
+					});
+				}
+				anchor.appendChild(img);
 				cell.appendChild(anchor);
+				var title = document.createElement('div');
+				title.className = 'project-title';
+				title.innerHTML = project.title;
+				cell.appendChild(title);
 			}
 
 			function addProject(project) {
