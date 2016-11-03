@@ -41,3 +41,11 @@ body {
 	opacity: 0.5;
 }
 
+.project-vr {
+	color: white;
+	padding: 8px;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	text-align: right;
+}

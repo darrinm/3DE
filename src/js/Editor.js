@@ -35,7 +35,7 @@ var Editor = function () {
 
 		// notifications
 
-		titleChanged: new Signal(),
+		projectChanged: new Signal(),
 
 		editorCleared: new Signal(),
 
@@ -82,8 +82,8 @@ var Editor = function () {
 
 	};
 
-	this.projectId = THREE.Math.generateUUID();
 	this.config = new Config( 'threejs-editor' );
+	this.project = new Project( this );
 	this.history = new History( this );
 	this.storage = new Storage();
 	this.loader = new Loader( this );
@@ -420,8 +420,7 @@ Editor.prototype = {
 	},
 
 	clear: function () {
-		this.setTitle( 'Untitled' );
-		this.projectId = THREE.Math.generateUUID();
+		this.project = new Project( this );
 
 		this.history.clear();
 		this.storage.clear();
@@ -449,13 +448,6 @@ Editor.prototype = {
 
 	},
 
-	setTitle: function ( title ) {
-
-		this.title = title;
-		this.signals.titleChanged.dispatch();
-
-	},
-
 	//
 
 	fromJSON: function ( json ) {
@@ -471,26 +463,8 @@ Editor.prototype = {
 
 		}
 
-		if ( json.metadata && json.metadata.title )
-			this.setTitle( json.metadata.title );
-
-		if ( json.project ) {
-			if ( json.project.id )
-				this.projectId = json.project.id;
-			this.config.setKey( 'project/id', this.projectId );
-
-			if ( json.project.gammaInput )
-				this.config.setKey( 'project/renderer/gammaInput', json.project.gammaInput );
-			if ( json.project.gammOutput )
-				this.config.setKey( 'project/renderer/gammaOutput', json.project.gammaOutput );
-			if (json.project.shadows)
-				this.config.setKey( 'project/renderer/shadows', json.project.shadows );
-			if ( json.project.editable )
-				this.config.setKey( 'project/editable', json.project.editable );
-			if ( json.project.vr )
-				this.config.setKey( 'project/vr', json.project.vr )
-		}
-
+		this.project = new Project( this );
+		this.project.fromJSON( json.project );
 		var camera = loader.parse( json.camera );
 
 		this.camera.copy( camera );
@@ -526,18 +500,8 @@ Editor.prototype = {
 		//
 
 		return {
-
-			metadata: {
-				title: this.title
-			},
-			project: {
-				gammaInput: this.config.getKey( 'project/renderer/gammaInput' ),
-				gammaOutput: this.config.getKey( 'project/renderer/gammaOutput' ),
-				shadows: this.config.getKey( 'project/renderer/shadows' ),
-				editable: this.config.getKey( 'project/editable' ),
-				vr: this.config.getKey( 'project/vr' ),
-				id: this.projectId
-			},
+			metadata: {},
+			project: this.project.toJSON(),
 			camera: this.camera.toJSON(),
 			scene: this.scene.toJSON(),
 			scripts: this.scripts,

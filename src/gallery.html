@@ -75,14 +75,23 @@
 			img.width = 400;
 			anchor.appendChild(img);
 			cell.appendChild(anchor);
+
 			var title = document.createElement('div');
 			title.className = 'project-title';
 			title.innerHTML = project.title;
 			cell.appendChild(title);
+
 			var owner = document.createElement('div');
 			owner.className = 'project-owner';
 			owner.innerHTML = project.ownerName;
 			cell.appendChild(owner);
+
+			if (project.vr) {
+				var vr = document.createElement('div');
+				vr.className = 'project-vr';
+				vr.innerHTML = 'VR';
+				cell.appendChild(vr);
+			}
 		}
 
 		function addProject(project) {

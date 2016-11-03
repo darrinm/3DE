@@ -4,7 +4,7 @@
 
 var TDE = function() {}
 
-TDE.save = function( projectId, title, serializedProject ) {
+TDE.save = function( project, serializedProject ) {
 
 	var user = firebase.auth().currentUser;
 	var userName = user.displayName;
@@ -12,22 +12,22 @@ TDE.save = function( projectId, title, serializedProject ) {
 	// Create a thumbnail.
 	// Save the project.
 
-	var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
+	var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + project.id + '/' + 'project.json' );
 	return fileRef.putString( serializedProject ).then( function( snapshot ) {
 
 		// Save a thumbnail.
 
 		var image = TDE.createThumbnail( editor );
-		var thumbRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'thumbnail.jpg' );
+		var thumbRef = firebase.storage().ref( 'user/' + user.uid + '/' + project.id + '/' + 'thumbnail.jpg' );
 		return thumbRef.put( image ).then( function( snapshot ) {
 
 			// Add the project to the database.
 
-			var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
+			var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + project.id );
 			return projectRef.set( {
 				'owner': user.uid,
 				'ownerName': userName,
-				'title': title,
+				'title': project.title,
 				'description': '<na>',
 				'thumbnail': thumbRef.fullPath,
 		// TODO:			'created': ?,
@@ -63,14 +63,14 @@ TDE.load = function( projectId ) {
 }
 
 // TODO: delete old files
-TDE.publish = function( projectId, title, files ) {
+TDE.publish = function( project, files ) {
 
 	var publishBucket = '3de-pub';
 	var user = firebase.auth().currentUser;
 	var userName = user.displayName;
 
 	// Remove characters that aren't URL friendly.
-	var safeTitle = title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
+	var safeTitle = project.title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
 	var publishName = userName + '/' + safeTitle;
 	var publishPath = publishBucket + '/' + publishName;
 
@@ -88,15 +88,16 @@ TDE.publish = function( projectId, title, files ) {
 
 		// Add to published project database.
 
-		var publishedRef = firebase.database().ref( 'published-projects/' + projectId );
+		var publishedRef = firebase.database().ref( 'published-projects/' + project.id );
 		publishedRef.set( {
 			'owner': user.uid,
 			'ownerName': userName,
-			'title': title,
+			'title': project.title,
 			'description': '<na>',
 			'play': playURL,
 			'thumbnail': thumbnailURL,
-			'publishedOn': ( new Date ).toJSON()
+			'publishedOn': ( new Date ).toJSON(),
+			'vr': project.vr ? true : false
 		} );
 		return playURL;
 
