@@ -4,7 +4,7 @@
 
 Sidebar.Project = function ( editor ) {
 
-	var config = editor.config;
+	var project = editor.project;
 	var signals = editor.signals;
 
 	var rendererTypes = {
@@ -38,8 +38,7 @@ Sidebar.Project = function ( editor ) {
 
 		var value = this.getValue();
 
-		config.setKey( 'project/renderer', value );
-
+		project.renderer.type = value;
 		updateRenderer();
 
 	} );
@@ -49,9 +48,9 @@ Sidebar.Project = function ( editor ) {
 
 	container.add( rendererTypeRow );
 
-	if ( config.getKey( 'project/renderer' ) !== undefined ) {
+	if ( project.renderer.type !== undefined ) {
 
-		rendererType.setValue( config.getKey( 'project/renderer' ) );
+		rendererType.setValue( project.renderer.type );
 
 	}
 
@@ -59,9 +58,9 @@ Sidebar.Project = function ( editor ) {
 
 	var rendererPropertiesRow = new UI.Row().setMarginLeft( '90px' );
 
-	var rendererAntialias = new UI.THREE.Boolean( config.getKey( 'project/renderer/antialias' ), 'antialias' ).onChange( function () {
+	var rendererAntialias = new UI.THREE.Boolean( project.renderer.antialias, 'antialias' ).onChange( function () {
 
-		config.setKey( 'project/renderer/antialias', this.getValue() );
+		project.renderer.antialias = this.getValue();
 		updateRenderer();
 
 	} );
@@ -69,9 +68,9 @@ Sidebar.Project = function ( editor ) {
 
 	// shadow
 
-	var rendererShadows = new UI.THREE.Boolean( config.getKey( 'project/renderer/shadows' ), 'shadows' ).onChange( function () {
+	var rendererShadows = new UI.THREE.Boolean( project.renderer.shadows, 'shadows' ).onChange( function () {
 
-		config.setKey( 'project/renderer/shadows', this.getValue() );
+		project.renderer.shadows = this.getValue();
 		updateRenderer();
 
 	} );
@@ -81,9 +80,9 @@ Sidebar.Project = function ( editor ) {
 
 	// gamma input
 
-	var rendererGammaInput = new UI.THREE.Boolean( config.getKey( 'project/renderer/gammaInput' ), 'γ input' ).onChange( function () {
+	var rendererGammaInput = new UI.THREE.Boolean( project.renderer.gammaInput, 'γ input' ).onChange( function () {
 
-		config.setKey( 'project/renderer/gammaInput', this.getValue() );
+		project.renderer.gammaInput = this.getValue();
 		updateRenderer();
 
 	} );
@@ -91,9 +90,9 @@ Sidebar.Project = function ( editor ) {
 
 	// gamma output
 
-	var rendererGammaOutput = new UI.THREE.Boolean( config.getKey( 'project/renderer/gammaOutput' ), 'γ output' ).onChange( function () {
+	var rendererGammaOutput = new UI.THREE.Boolean( project.renderer.gammaOutput, 'γ output' ).onChange( function () {
 
-		config.setKey( 'project/renderer/gammaOutput', this.getValue() );
+		project.renderer.gammaOutput = this.getValue();
 		updateRenderer();
 
 	} );
@@ -104,9 +103,9 @@ Sidebar.Project = function ( editor ) {
 	// Editable
 
 	var editableRow = new UI.Row();
-	var editable = new UI.Checkbox( config.getKey( 'project/editable' ) ).setLeft( '100px' ).onChange( function () {
+	var editable = new UI.Checkbox( project.editable ).setLeft( '100px' ).onChange( function () {
 
-		config.setKey( 'project/editable', this.getValue() );
+		project.editable = this.getValue();
 
 	} );
 
@@ -118,9 +117,9 @@ Sidebar.Project = function ( editor ) {
 	// VR
 
 	var vrRow = new UI.Row();
-	var vr = new UI.Checkbox( config.getKey( 'project/vr' ) ).setLeft( '100px' ).onChange( function () {
+	var vr = new UI.Checkbox( project.vr ).setLeft( '100px' ).onChange( function () {
 
-		config.setKey( 'project/vr', this.getValue() );
+		project.vr = this.getValue();
 		// updateRenderer();
 
 	} );
@@ -136,15 +135,31 @@ Sidebar.Project = function ( editor ) {
 	// TODO: update on project change
 	var objectUUIDRow = new UI.Row();
 	var objectUUID = new UI.Text();
-	objectUUID.setValue( config.getKey( 'project/id' ) );
+	objectUUID.setValue( project.id );
 
 	objectUUIDRow.add( new UI.Text( 'UUID' ).setWidth( '90px' ) );
 	objectUUIDRow.add( objectUUID );
 
 	container.add( objectUUIDRow );
 
+	signals.projectChanged.add( refreshUI );
 
 	//
+
+	// TODO: better to just destroy/recreate the whole thing?
+	function refreshUI() {
+
+		project = editor.project;
+		rendererType.setValue( project.renderer.type );
+		rendererAntialias.setValue( project.renderer.antialias );
+		rendererShadows.setValue( project.renderer.shadows );
+		rendererGammaInput.setValue( project.renderer.gammaInput );
+		rendererGammaOutput.setValue( project.renderer.gammaOutput );
+		editable.setValue( project.editable );
+		vr.setValue( project.vr );
+		objectUUID.setValue( project.id );
+
+	}
 
 	function updateRenderer() {
 
@@ -162,7 +177,7 @@ Sidebar.Project = function ( editor ) {
 
 		rendererPropertiesRow.setDisplay( type === 'WebGLRenderer' ? '' : 'none' );
 
-		var renderer = new rendererTypes[ type ]( { antialias: antialias} );
+		var renderer = new rendererTypes[ type ]( { antialias: antialias } );
 		renderer.gammaInput = gammaIn;
 		renderer.gammaOutput = gammaOut;
 		if ( shadows && renderer.shadowMap ) {
@@ -176,7 +191,7 @@ Sidebar.Project = function ( editor ) {
 
 	}
 
-	createRenderer( config.getKey( 'project/renderer' ), config.getKey( 'project/renderer/antialias' ), config.getKey( 'project/renderer/shadows' ), config.getKey( 'project/renderer/gammaInput' ), config.getKey( 'project/renderer/gammaOutput' ) );
+	createRenderer( project.renderer.type, project.renderer.antialias, project.renderer.shadows, project.renderer.gammaInput, project.renderer.gammaOutput );
 
 	return container;
 

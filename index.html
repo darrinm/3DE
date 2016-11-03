@@ -24,10 +24,7 @@
   - gallery
   - users
 - what's new
-- my projects
 - activity feed?
-* sign in/up
-* new project
 	</pre>
 
 	<script src="js/libs/ui.js"></script>
@@ -42,7 +39,7 @@
 	<script>
 		firebase.auth().onAuthStateChanged(function (user) {
 			if (!user) {
-				document.getElementById('projectGrid').innerHTML = '';
+				document.getElementById('projectGrid').innerHTML = '<a href="#" onclick="Menubar.User.signInOut(); return false;">Sign in</a>&nbsp;to access your projects.';
 				return;
 			}
 

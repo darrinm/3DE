@@ -15,7 +15,8 @@ Menubar.User = function ( editor ) {
 	userUI.setClass( 'title' );
 	userUI.dom.style.cursor = 'pointer';
 	container.add( userUI );
-	userUI.onClick( function () {
+
+	Menubar.User.signInOut = function () {
 
 		var user = firebase.auth().currentUser;
 
@@ -105,7 +106,9 @@ Menubar.User = function ( editor ) {
 			*/
 		}
 
-	});
+	}
+
+	userUI.onClick( Menubar.User.signInOut );
 
 	firebase.auth().onAuthStateChanged( function ( user ) {
 

@@ -90,6 +90,7 @@
 
 		<script src="js/Editor.js"></script>
 		<script src="js/Config.js"></script>
+		<script src="js/Project.js"></script>
 		<script src="js/History.js"></script>
 		<script src="js/Loader.js"></script>
 		<script src="js/Menubar.js"></script>
@@ -287,8 +288,7 @@
 				signals.sceneGraphChanged.add( saveState );
 				signals.scriptChanged.add( saveState );
 				signals.historyChanged.add( saveState );
-				signals.titleChanged.add( saveState );
-				// TODO: projectChanged
+				signals.projectChanged.add( saveState );
 
 				signals.showModal.add( function ( content ) {
 

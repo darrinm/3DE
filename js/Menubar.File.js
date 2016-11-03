@@ -53,11 +53,11 @@ Menubar.File = function ( editor ) {
 
 		// TODO: saving/saved indicator
 		// TODO: error handling
-		TDE.save( editor.projectId, editor.title, output ).then (function() {
-			console.log( 'saved ' + editor.title );
+		TDE.save( editor.project, output ).then (function() {
+			console.log( 'saved ' + editor.project.title );
 		},
 		function() {
-			console.log( 'failed to save ' + editor.title );
+			console.log( 'failed to save ' + editor.project.title );
 		} );
 	} );
 	options.add( option );
@@ -73,7 +73,7 @@ Menubar.File = function ( editor ) {
 
 		var parameters = {
 			files: [
-				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': editor.title + '.3de' }
+				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': editor.project.title + '.3de' }
 			]
 		};
 
@@ -126,7 +126,7 @@ Menubar.File = function ( editor ) {
 
 						editor.clear();
 						editor.fromJSON( JSON.parse( content ) );
-						editor.setTitle( files[0].name.replace(/\.[^/.]+$/, "") );
+						editor.project.setTitle( files[0].name.replace(/\.[^/.]+$/, "") );
 
 					} );
 				},
@@ -315,7 +315,7 @@ Menubar.File = function ( editor ) {
 
 		//
 
-		var vr =  editor.config.getKey( 'project/vr' );
+		var vr =  editor.project.vr;
 
 		var output = getSerializedProject();
 		files.push( { name: 'app.json', data: output } );
@@ -340,7 +340,16 @@ Menubar.File = function ( editor ) {
 			}
 
 			content = content.replace( '<!-- includes -->', includes.join( '\n\t\t' ) );
-			content = content.replace( '<title>three.js</title>', '<title>' + editor.title + '</title>' );
+
+			// As per http://stackoverflow.com/questions/784586/convert-special-characters-to-html-in-javascript
+			function htmlEncode( s ) {
+				var el = document.createElement( 'div' );
+				el.innerText = el.textContent = s;
+				s = el.innerHTML;
+				return s;
+			}
+
+			content = content.replace( '<title>three.js</title>', '<title>' + htmlEncode( editor.project.title ) + '</title>' );
 
 			files.push( { name: 'index.html', data: content } );
 
@@ -430,7 +439,7 @@ Menubar.File = function ( editor ) {
 
 			files.push( { name: 'thumbnail.jpg', data: image } );
 
-			TDE.publish( editor.projectId, editor.title, files ).then( function( response ) {
+			TDE.publish( editor.project, files ).then( function( response ) {
 
 				preview.location = response;
 
