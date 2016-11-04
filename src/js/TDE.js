@@ -2,9 +2,9 @@
  * @author darrinm / https://darrin.massena.com/
  */
 
-var TDE = function() {}
+var TDE = function () {}
 
-TDE.save = function( project, serializedProject ) {
+TDE.save = function ( project, serializedProject ) {
 
 	var user = firebase.auth().currentUser;
 	var userName = user.displayName;
@@ -40,7 +40,7 @@ TDE.save = function( project, serializedProject ) {
 
 }
 
-TDE.load = function( projectId ) {
+TDE.load = function ( projectId ) {
 
 	var user = firebase.auth().currentUser;
 	var userName = user.displayName;
@@ -62,8 +62,30 @@ TDE.load = function( projectId ) {
 
 }
 
+TDE.delete = function ( projectId ) {
+
+	var user = firebase.auth().currentUser;
+
+	// Delete the project file.
+
+	var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
+	return fileRef.delete().then( function() {
+
+		// Delete the project database entry.
+
+		var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
+		return projectRef.remove().then( function() {
+
+			// TODO: delete the published project (if any).
+
+		} );
+
+	} );
+
+}
+
 // TODO: delete old files
-TDE.publish = function( project, files ) {
+TDE.publish = function ( project, files ) {
 
 	var publishBucket = '3de-pub';
 	var user = firebase.auth().currentUser;
@@ -176,7 +198,7 @@ TDE.upload = function( bucket, object, data ) {
 
 // Create a thumbnail image for the project. Return in an ArrayBuffer.
 
-TDE.createThumbnail = function( editor ) {
+TDE.createThumbnail = function ( editor ) {
 
 	// TODO: carry over settings, e.g. antialias from project
 	var renderer = new THREE.WebGLRenderer( { preserveDrawingBuffer: true, antialias: true } );
