@@ -10,7 +10,6 @@
 	<link id="theme" type="text/css" rel="stylesheet" href="css/light.css"/>
 
 	<div style="height: 32px;"></div>
-	<a href='gallery.html'>Gallery</a> |
 	<a href='editor.html#new=blank'>New Project</a> |
 	<a href='editor.html'>Continue Editing</a>
 	<p>
@@ -28,9 +27,11 @@
 	</pre>
 
 	<script src="js/libs/ui.js"></script>
-	<script src="Menubar.js"></script>
+	<script src="index.js"></script>
 	<script src="Menubar.Logo.js"></script>
+	<script src="Menubar.Gallery.js"></script>
 	<script src="js/Menubar.User.js"></script>
+	<script src="js/TDE.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/3.5.1/firebase.js"></script>
 	<script src="deps/firebase-ui-auth.js"></script>
 	<script src="main.js"></script>
@@ -99,10 +100,20 @@
 				}
 				anchor.appendChild(img);
 				cell.appendChild(anchor);
+
 				var title = document.createElement('div');
 				title.className = 'project-title';
 				title.innerHTML = project.title;
 				cell.appendChild(title);
+
+				var del = document.createElement('div');
+				del.className = 'project-delete';
+				del.innerHTML = 'x';
+				del.addEventListener('click', function (event) {
+					// TODO: are you sure?
+					TDE.delete(project.id);
+				});
+				cell.appendChild(del);
 			}
 
 			function addProject(project) {

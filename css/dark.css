@@ -111,7 +111,7 @@ input.Number {
 			display: inline-block;
 			color: #fff;
 			margin: 0;
-			padding: 2px 8px;
+			padding: 1px 8px;
 			font-size: x-large;
 			cursor: pointer;
 		}
