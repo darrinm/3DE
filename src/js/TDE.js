@@ -68,7 +68,7 @@ TDE.delete = function ( projectId ) {
 
 	// Delete the thumbnail file.
 
-	var thumbRef = firebase.storage().ref( 'user/' + user.uid + '/' + project.id + '/' + 'thumbnail.jpg' );
+	var thumbRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'thumbnail.jpg' );
 	return thumbRef.delete().then( function() {
 
 		// Delete the project file.
