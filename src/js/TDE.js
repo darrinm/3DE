@@ -66,17 +66,39 @@ TDE.delete = function ( projectId ) {
 
 	var user = firebase.auth().currentUser;
 
-	// Delete the project file.
+	// Delete the thumbnail file.
 
-	var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
-	return fileRef.delete().then( function() {
+	var thumbRef = firebase.storage().ref( 'user/' + user.uid + '/' + project.id + '/' + 'thumbnail.jpg' );
+	return thumbRef.delete().then( function() {
 
-		// Delete the project database entry.
+		// Delete the project file.
 
-		var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
-		return projectRef.remove().then( function() {
+		var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
+		return fileRef.delete().then( function() {
 
-			// TODO: delete the published project (if any).
+			// Delete the project database entry.
+
+			var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
+			return projectRef.remove().then( function() {
+
+				// Delete the published project (if any).
+
+				var publishedRef = firebase.database().ref( 'published-projects/' + projectId );
+				return publishedRef.remove().then( function() {
+
+					// TODO: get list of published files and delete them.
+					// TODO: this needs to be authed and done on a server.
+
+					// http://stackoverflow.com/questions/26349901/delete-all-files-in-folder-or-with-prefix-in-google-cloud-bucket-from-java
+//					TDE.upload ( publishBucket, publishName + '/' + file.name )
+
+				}, function () {
+
+					// No published project but this shouldn't bubble up as an error.
+
+				} );
+
+			} );
 
 		} );
 
