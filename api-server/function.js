@@ -31,7 +31,7 @@ exports.api = function (request, response) {
 		var idToken = request.query.token;
 		firebase.auth().verifyIdToken(idToken).then(function (decodedToken) {
 			var uid = decodedToken.uid;
-			console.log('decodedToken: ' + uid);
+			console.log('uid: ' + uid);
 
 		}).catch(function (error) {
 			console.log('verifyIdToken err: ' + JSON.stringify(err));
