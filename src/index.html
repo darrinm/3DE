@@ -116,8 +116,9 @@
 					del.className = 'project-delete';
 					del.innerHTML = 'x';
 					del.addEventListener('click', function (event) {
-						// TODO: are you sure?
-						TDE.delete(project.id);
+						if (confirm('Delete ' + project.title + '?')) {
+							TDE.delete(project.id);
+						}
 					});
 					cell.appendChild(del);
 				});
