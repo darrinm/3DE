@@ -1,5 +1,8 @@
 var https = require('https');
 var storage = require('@google-cloud/storage')();
+var firebase = require('firebase');
+
+
 
 exports.api = function (request, response) {
 	response.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,7 +13,7 @@ exports.api = function (request, response) {
 		return;
 	}
 
-	storage.bucket('de-io-3a257.appspot.com').file('config.json').download(function (err, data) {
+	storage.bucket('de-io-3a257.appspot.com').file('api-config.json').download(function (err, data) {
 		if (err) {
 //		console.log('configFile.download: err: ' + JSON.stringify(err) + '\ndata: ' + data);
 			console.log('config.json download err: ' + err);
@@ -21,26 +24,24 @@ exports.api = function (request, response) {
 		var config = JSON.parse(data);
 //		console.log('config: ' + JSON.stringify(config));
 
-		var localhost = request.headers.origin ? (request.headers.origin.indexOf('localhost') != -1) : false;
-		var client = localhost ? config['localhost'] : config['spiffcode.github.io'];
-		var clientParms = 'client_id=' + client.id + '&client_secret=' + client.secret;
-		var options = {
-			hostname: 'github.com', port: 443, method: 'POST',
-			path: '/login/oauth/access_token?' + clientParms + '&code=' + request.query.code
+		var firebaseConfig = {
+			serviceAccount: {
+				projectId: config.projectId,
+				clientEmail: config.clientEmail,
+				privateKey: config.privateKey
+			},
+			databaseURL: 'https://de-io-3a257.firebaseio.com'
 		};
-		var req = https.request(options, function(res) {
-			console.log('Status: ' + res.statusCode);
-			res.setEncoding('utf8');
-			res.on('data', function (body) {
-				response.statusCode = res.statusCode;
-				response.statusMessage = res.statusMessage;
-				response.end(body);
-			});
+		firebase.initializeApp(firebaseConfig);
+
+		var idToken = request.query.token;
+		firebase.auth().verifyIdToken(idToken).then(function (decodedToken) {
+			var uid = decodedToken.uid;
+			console.log('decodedToken: ' + uid);
+
+
+		}).catch(function (error) {
+			console.log('verifyIdToken err: ' + JSON.stringify(err));
 		});
-		req.on('error', function(e) {
-			console.log('problem with request: ' + e.message);
-			response.sendStatus(res.statusCode);
-		});
-		req.end();
 	});
 }
