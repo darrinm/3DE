@@ -1,6 +1,7 @@
 var https = require('https');
 var storage = require('@google-cloud/storage')();
 var firebase = require('firebase');
+var config = null;
 
 exports.api = function (request, response) {
 	response.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,23 +12,8 @@ exports.api = function (request, response) {
 		return;
 	}
 
-	storage.bucket('de-io-3a257.appspot.com').file('api-config.json').download(function (err, data) {
-		if (err) {
-//		console.log('configFile.download: err: ' + JSON.stringify(err) + '\ndata: ' + data);
-			console.log('config.json download err: ' + err);
-			response.sendStatus(500);
-			return;
-		}
-
-		var config = JSON.parse(data);
-//		console.log('config: ' + JSON.stringify(config));
-
-		var firebaseConfig = {
-			serviceAccount: config,
-			databaseURL: 'https://de-io-3a257.firebaseio.com'
-		};
-		firebase.initializeApp(firebaseConfig);
-
+	function handleRequest() {
+		console.log('request.query: ' + JSON.stringify(request.query));
 		var idToken = request.query.token;
 		firebase.auth().verifyIdToken(idToken).then(function (decodedToken) {
 			var uid = decodedToken.uid;
@@ -36,5 +22,29 @@ exports.api = function (request, response) {
 		}).catch(function (error) {
 			console.log('verifyIdToken err: ' + JSON.stringify(err));
 		});
-	});
+	}
+
+	if (config) {
+		handleRequest();
+	} else {
+		storage.bucket('de-io-3a257.appspot.com').file('api-config.json').download(function (err, data) {
+			if (err) {
+	//		console.log('configFile.download: err: ' + JSON.stringify(err) + '\ndata: ' + data);
+				console.log('config.json download err: ' + err);
+				response.sendStatus(500);
+				return;
+			}
+
+			config = JSON.parse(data);
+	//		console.log('config: ' + JSON.stringify(config));
+
+			var firebaseConfig = {
+				serviceAccount: config,
+				databaseURL: 'https://de-io-3a257.firebaseio.com'
+			};
+			firebase.initializeApp(firebaseConfig);
+
+			handleRequest();
+		});
+	}
 }
