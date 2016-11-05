@@ -106,18 +106,27 @@
 				title.innerHTML = project.title;
 				cell.appendChild(title);
 
-				var del = document.createElement('div');
-				del.className = 'project-delete';
-				del.innerHTML = 'x';
-				del.addEventListener('click', function (event) {
-					// TODO: are you sure?
-					TDE.delete(project.id);
-				});
-				cell.appendChild(del);
 			}
 
 			function addProject(project) {
 				var cell = document.createElement('div');
+				cell.addEventListener('mouseenter', function (event) {
+					var del = document.createElement('div');
+					del.id = 'delete';
+					del.className = 'project-delete';
+					del.innerHTML = 'x';
+					del.addEventListener('click', function (event) {
+						if (confirm('Delete ' + project.title + '?')) {
+							TDE.delete(project.id);
+						}
+					});
+					cell.appendChild(del);
+				});
+
+				cell.addEventListener('mouseleave', function (event) {
+					cell.removeChild(getElementById(event.target, 'delete'));
+				});
+
 				cell.className = 'cell';
 				cell.id = 'id-' + project.id;
 				populateCell(cell, project);
