@@ -1,7 +1,7 @@
 var https = require('https');
 var storage = require('@google-cloud/storage')();
 
-exports.auth = function (request, response) {
+exports.api = function (request, response) {
 	response.setHeader('Access-Control-Allow-Origin', '*');
 	response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 
@@ -10,11 +10,9 @@ exports.auth = function (request, response) {
 		return;
 	}
 
-// NOTE: Do not log headers or response body so no user information is retained anywhere!
-
-	storage.bucket('ghcodex.appspot.com').file('config.json').download(function (err, data) {
-//		console.log('configFile.download: err: ' + JSON.stringify(err) + '\ndata: ' + data);
+	storage.bucket('de-io-3a257.appspot.com').file('config.json').download(function (err, data) {
 		if (err) {
+//		console.log('configFile.download: err: ' + JSON.stringify(err) + '\ndata: ' + data);
 			console.log('config.json download err: ' + err);
 			response.sendStatus(500);
 			return;
