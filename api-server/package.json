@@ -8,6 +8,7 @@
     "url": "https://github.com/darrinm/3DE.git"
   },
   "dependencies": {
-    "@google-cloud/storage": "^0.1.1"
+    "@google-cloud/storage": "^0.1.1",
+    "firebase": "^3.5.3"
   }
 }

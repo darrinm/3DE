@@ -2,8 +2,6 @@ var https = require('https');
 var storage = require('@google-cloud/storage')();
 var firebase = require('firebase');
 
-
-
 exports.api = function (request, response) {
 	response.setHeader('Access-Control-Allow-Origin', '*');
 	response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -38,7 +36,6 @@ exports.api = function (request, response) {
 		firebase.auth().verifyIdToken(idToken).then(function (decodedToken) {
 			var uid = decodedToken.uid;
 			console.log('decodedToken: ' + uid);
-
 
 		}).catch(function (error) {
 			console.log('verifyIdToken err: ' + JSON.stringify(err));
