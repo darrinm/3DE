@@ -1,0 +1,13 @@
+{
+  "name": "3de-api",
+  "description": "3DE API server",
+  "version": "0.0.1",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darrinm/3DE.git"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^0.1.1"
+  }
+}
