@@ -23,11 +23,7 @@ exports.api = function (request, response) {
 //		console.log('config: ' + JSON.stringify(config));
 
 		var firebaseConfig = {
-			serviceAccount: {
-				projectId: config.project_id,
-				clientEmail: config.client_email,
-				privateKey: config.private_key
-			},
+			serviceAccount: config,
 			databaseURL: 'https://de-io-3a257.firebaseio.com'
 		};
 		firebase.initializeApp(firebaseConfig);
