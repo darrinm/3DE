@@ -24,9 +24,9 @@ exports.api = function (request, response) {
 
 		var firebaseConfig = {
 			serviceAccount: {
-				projectId: config.projectId,
-				clientEmail: config.clientEmail,
-				privateKey: config.privateKey
+				projectId: config.project_id,
+				clientEmail: config.client_email,
+				privateKey: config.private_key
 			},
 			databaseURL: 'https://de-io-3a257.firebaseio.com'
 		};
