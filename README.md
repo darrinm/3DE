@@ -15,7 +15,7 @@ live-server
 ## Deploy
 ```bash
 # From project root
-bin/push
+bin/deploy
 ```
 
 ## Test
