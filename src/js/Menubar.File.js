@@ -46,7 +46,7 @@ Menubar.File = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Save (3DE.io)...' );
+	option.setTextContent( 'Save' );
 	option.onClick( function () {
 
 		var output = getSerializedProject();
@@ -62,22 +62,45 @@ Menubar.File = function ( editor ) {
 	} );
 	options.add( option );
 
-	// Save (Dropbox)
-
+	// Publish (3DE.io)
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Save (Dropbox)...' );
-	option.onClick( function () {
+	option.setTextContent( 'Publish' );
+	option.onClick( function() {
 
-		var output = getSerializedProject();
+		// Must be signed in to publish.
 
-		var parameters = {
-			files: [
-				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': editor.project.title + '.3de' }
-			]
-		};
+		var user = firebase.auth().currentUser;
+		if ( !user ) {
 
-		Dropbox.save( parameters );
+			alert( 'Sign in so you can publish!' );
+			return;
+
+		}
+
+		// Open the preview window now (on click event) so it won't get blocked.
+		var preview = window.open( '', 'preview' );
+
+		gatherFiles( function( files ) {
+
+			// Create a thumbnail for the project.
+			var image = TDE.createThumbnail( editor );
+
+			files.push( { name: 'thumbnail.jpg', data: image } );
+
+			TDE.publishProject( editor.project, files ).then( function( response ) {
+
+				preview.location = response;
+
+			}, function( status ) {
+
+				console.log( 'publish error status ', status );
+				preview.close();
+
+			} );
+
+		} );
+
 	} );
 	options.add( option );
 
@@ -303,10 +326,6 @@ Menubar.File = function ( editor ) {
 	} );
 	options.add( option );
 
-	//
-
-	options.add( new UI.HorizontalRule() );
-
 	// Publish
 
 	var gatherFiles = function ( onGathered ) {
@@ -393,7 +412,7 @@ Menubar.File = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Publish (Download)' );
+	option.setTextContent( 'Export Publishable' );
 	option.onClick( function () {
 
 		gatherFiles( function ( files ) {
@@ -413,48 +432,28 @@ Menubar.File = function ( editor ) {
 	} );
 	options.add( option );
 
-	// Publish (3DE.io)
+	//
+
+	options.add( new UI.HorizontalRule() );
+
+	// Save (Dropbox)
+
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Publish (3DE.io)' );
-	option.onClick( function() {
+	option.setTextContent( 'Save (Dropbox)...' );
+	option.onClick( function () {
 
-		// Must be signed in to publish.
+		var output = getSerializedProject();
 
-		var user = firebase.auth().currentUser;
-		if ( !user ) {
+		var parameters = {
+			files: [
+				{ 'url': 'data:text/plain;base64,' + window.btoa( output ), 'filename': editor.project.title + '.3de' }
+			]
+		};
 
-			alert( 'Sign in so you can publish!' );
-			return;
-
-		}
-
-		// Open the preview window now (on click event) so it won't get blocked.
-		var preview = window.open( '', 'preview' );
-
-		gatherFiles( function( files ) {
-
-			// Create a thumbnail for the project.
-			var image = TDE.createThumbnail( editor );
-
-			files.push( { name: 'thumbnail.jpg', data: image } );
-
-			TDE.publishProject( editor.project, files ).then( function( response ) {
-
-				preview.location = response;
-
-			}, function( status ) {
-
-				console.log( 'publish error status ', status );
-				preview.close();
-
-			} );
-
-		} );
-
+		Dropbox.save( parameters );
 	} );
 	options.add( option );
-
 
 	//
 
