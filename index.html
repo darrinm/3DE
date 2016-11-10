@@ -38,13 +38,20 @@
 	<link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/live/0.5/firebase-ui-auth.css"/>
 
 	<script>
+		var lastUser = null;
 		firebase.auth().onAuthStateChanged(function (user) {
 			if (!user) {
 				document.getElementById('projectGrid').innerHTML = '<a href="#" onclick="Menubar.User.signInOut(); return false;">Sign in</a>&nbsp;to access your projects.';
+				lastUser = null;
 				return;
 			}
+			// onAuthStateChanged is called when innocent things happen, e.g. token refresh.
+			// See http://stackoverflow.com/questions/37673616/firebase-android-onauthstatechanged-called-twice
+			if (lastUser && lastUser.uid == user.uid)
+				return;
+			lastUser = user;
 
-			var waits = [ 'Loading...', 'Fetching...', 'Just a sec...', 'Hold your horses...', 'Wait...', 'Almost there...', 'Any minute now...', 'Please wait...' ];
+			var waits = [ 'Loading...', 'Fetching...', 'Just a sec...', 'Hold your horses...', 'Wait...', 'Almost there...', 'Any minute now...', 'Please wait...', 'Coming soon...' ];
 			var wait = waits[Math.floor(Math.random() * waits.length)];
 			document.getElementById('projectGrid').innerHTML = wait;
 			var waiting = true;
@@ -111,7 +118,7 @@
 				del.innerHTML = 'x';
 				del.addEventListener('click', function (event) {
 					if (confirm('Delete ' + project.title + '?'))
-						TDE.delete(project.id);
+						TDE.deleteProject(project.id);
 				});
 				cell.appendChild(del);
 			}
@@ -126,7 +133,10 @@
 
 			function removeProject(project) {
 				var cell = getCell(project.id);
-				grid.removeChild(cell);
+				console.log('removing project ' + project.id + ', cell: ' + cell);
+				// TODO: why does this get called twice?
+				if (cell)
+					grid.removeChild(cell);
 			}
 
 			function changeProject(project) {
