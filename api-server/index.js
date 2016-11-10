@@ -2,14 +2,14 @@ const storage = require('@google-cloud/storage')();
 const firebase = require('firebase');
 var config = null;
 
-// delete published project <projectId>
-// delete contents of published project before overwriting <projectId>
-// get temp upload url to <userName>/<safeProjectTitle>/
+// APIs:
+// command: deletePublishedProject, projectId: <projectId>, token: <userToken>
+// NA: command: deletePublishedProjectFiles, projectId: <projectId>, token: <userToken> -- delete contents of an already published project before overwriting
+// NA: get temp upload url to <userName>/<safeProjectTitle>/
 
 exports.api = function (request, response) {
 	response.setHeader('Access-Control-Allow-Origin', '*');
 	response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-//	response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
 	if (request.method == 'OPTIONS') {
 		response.sendStatus(200);
@@ -30,7 +30,6 @@ exports.api = function (request, response) {
 		response.sendStatus(500);
 		response.end();
 	});
-
 }
 
 function configure() {
@@ -69,7 +68,6 @@ function verifyToken(token) {
 	});
 }
 
-// E.g. { "token": "<token>", "projectId": "<projectid>", "command": "deletePublishedProject | ..." }
 function executeCommand(command, userId) {
 	switch (command.command) {
 		case 'deletePublishedProject':
@@ -77,6 +75,7 @@ function executeCommand(command, userId) {
 
 		default:
 			console.log('unknown command: ' + command.command);
+			return Promise.reject(501);
 	}
 }
 
@@ -91,7 +90,7 @@ function deletePublishedProject(projectId, userId) {
 		}
 		console.log(JSON.stringify(project));
 
-		/*
+		/* If we want to scope firebase calls to the user.
 		var firebaseConfig = {
 			serviceAccount: config,
 			databaseURL: 'https://de-io-3a257.firebaseio.com',
@@ -102,7 +101,7 @@ function deletePublishedProject(projectId, userId) {
 		firebase.initializeApp(firebaseConfig, 'asUser' + userId);
 		*/
 
-		// Enumerate and delete all the published project files.
+		// Delete all the published project files.
 		// TODO: can't rely on client defined project.path
 		// More documentation lies WRT to returning a promise.
 		return new Promise(function (resolve, reject) {
