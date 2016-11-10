@@ -10,6 +10,7 @@ var config = null;
 exports.api = function (request, response) {
 	response.setHeader('Access-Control-Allow-Origin', '*');
 	response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+	response.setHeader('Access-Control-Allow-Headers', '*');
 
 	if (request.method == 'OPTIONS') {
 		response.sendStatus(200);
