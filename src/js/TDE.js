@@ -3,8 +3,10 @@
  */
 
 var TDE = function () {}
+TDE.serverURL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ?
+		'http://localhost:8081' : 'https://us-central1-de-io-3a257.cloudfunctions.net';
 
-TDE.save = function ( project, serializedProject ) {
+TDE.saveProject = function ( project, serializedProject ) {
 
 	var user = firebase.auth().currentUser;
 	var userName = user.displayName;
@@ -40,7 +42,7 @@ TDE.save = function ( project, serializedProject ) {
 
 }
 
-TDE.load = function ( projectId ) {
+TDE.loadProject = function ( projectId ) {
 
 	var user = firebase.auth().currentUser;
 	var userName = user.displayName;
@@ -62,52 +64,72 @@ TDE.load = function ( projectId ) {
 
 }
 
-TDE.delete = function ( projectId ) {
+TDE.deletePublishedProject = function ( projectId ) {
+
+	var user = firebase.auth().currentUser;
+	return user.getToken(/* forceRefresh */ true).then(function (idToken) {
+		// Send token to your backend via HTTPS
+
+		console.log( 'token: ' + idToken );
+
+		return new Promise( function( resolve, reject ) {
+			var xhr = new XMLHttpRequest();
+			xhr.open( 'POST', TDE.serverURL + '/api', true );
+			xhr.setRequestHeader( 'Content-Type', 'application/json;charset=UTF-8' );
+
+			xhr.onload = function( event ) {
+
+				if ( this.status === 200 || this.status === 0 ) {
+
+					resolve( this.responseText );
+
+				} else {
+
+					reject( this.status );
+
+				}
+
+			}
+			xhr.send( JSON.stringify( { command: 'deletePublishedProject', projectId: projectId, token: idToken } ) );
+		});
+
+	});
+
+}
+
+TDE.deleteProject = function ( projectId ) {
 
 	var user = firebase.auth().currentUser;
 
-	// Delete the thumbnail file.
+	// Delete the published project (if any).
 
-	var thumbRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'thumbnail.jpg' );
-	return thumbRef.delete().then( function() {
+	return TDE.deletePublishedProject( projectId ).then( function() {
 
-		// Delete the project file.
+		// Delete the thumbnail file.
 
-		var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
-		return fileRef.delete().then( function() {
+		var thumbRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'thumbnail.jpg' );
+		return thumbRef.delete().then( function() {
 
-			// Delete the project database entry.
+			// Delete the project file.
 
-			var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
-			return projectRef.remove().then( function() {
+			var fileRef = firebase.storage().ref( 'user/' + user.uid + '/' + projectId + '/' + 'project.json' );
+			return fileRef.delete().then( function() {
 
-				// Delete the published project (if any).
+				// Delete the project database entry.
 
-				var publishedRef = firebase.database().ref( 'published-projects/' + projectId );
-				return publishedRef.remove().then( function() {
-
-					// TODO: get list of published files and delete them.
-					// TODO: this needs to be authed and done on a server.
-
-					// http://stackoverflow.com/questions/26349901/delete-all-files-in-folder-or-with-prefix-in-google-cloud-bucket-from-java
-//					TDE.upload ( publishBucket, publishName + '/' + file.name )
-
-				}, function () {
-
-					// No published project but this shouldn't bubble up as an error.
-
-				} );
+				var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + projectId );
+				return projectRef.remove();
 
 			} );
 
 		} );
 
-	} );
+	});
 
 }
 
 // TODO: delete old files
-TDE.publish = function ( project, files ) {
+TDE.publishProject = function ( project, files ) {
 
 	var publishBucket = '3de-pub';
 	var user = firebase.auth().currentUser;
@@ -134,14 +156,15 @@ TDE.publish = function ( project, files ) {
 
 		var publishedRef = firebase.database().ref( 'published-projects/' + project.id );
 		publishedRef.set( {
-			'owner': user.uid,
-			'ownerName': userName,
-			'title': project.title,
-			'description': '<na>',
-			'play': playURL,
-			'thumbnail': thumbnailURL,
-			'publishedOn': ( new Date ).toJSON(),
-			'vr': project.vr ? true : false
+			owner: user.uid,
+			ownerName: userName,
+			title: project.title,
+			description: '<na>',
+			path: publishName,
+			play: playURL,
+			thumbnail: thumbnailURL,
+			publishedOn: ( new Date ).toJSON(),
+			vr: project.vr ? true : false
 		} );
 		return playURL;
 
@@ -160,7 +183,7 @@ TDE.upload = function( bucket, object, data ) {
 		jpg: 'image/jpeg',
 		jpeg: 'image/jpeg'
 	}
-	var contentType = mimeTypes[ object.split( '.' ).pop().toLowerCase() ] || 'text/plain';
+	var contentType = mimeTypes[ object.split( '.' ).pop().toLowerCase() ] | 'text/plain';
 
 	// Get resumable upload session URI.
 

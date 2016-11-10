@@ -120,7 +120,7 @@ Menubar.User = function ( editor ) {
 
 			if ( editor.pendingProject ) {
 
-				TDE.load( editor.pendingProject );
+				TDE.loadProject( editor.pendingProject );
 				editor.pendingProject = null;
 
 			}

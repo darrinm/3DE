@@ -1,21 +1,15 @@
 ## [Try it now.](https://darrinm.github.io/3DE)
 
 ## Install
-< nothing >
+npm install
 
 ## Build
 < nothing >
 
-## Run
-```bash
-cd src
-live-server
-```
-
 ## Deploy
 ```bash
 # From project root
-bin/push
+bin/deploy-api-server
 ```
 
 ## Test
@@ -23,10 +17,9 @@ bin/push
 gcloud auth application-default login
 cd api-server
 node host.js
-http --verbose POST :8081/api token=whatever
+http --verbose POST :8081/api <command.json # needs a current user token
 
-or with Visual Studio Code
-launchctl setenv GCLOUD_PROJECT de-io-3a257
+# For running/debugging under Visual Studio Code see launch.json
 
 #npm install -g @google-cloud/functions-emulator
 #functions start

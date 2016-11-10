@@ -53,7 +53,7 @@ Menubar.File = function ( editor ) {
 
 		// TODO: saving/saved indicator
 		// TODO: error handling
-		TDE.save( editor.project, output ).then (function() {
+		TDE.saveProject( editor.project, output ).then (function() {
 			console.log( 'saved ' + editor.project.title );
 		},
 		function() {
@@ -439,7 +439,7 @@ Menubar.File = function ( editor ) {
 
 			files.push( { name: 'thumbnail.jpg', data: image } );
 
-			TDE.publish( editor.project, files ).then( function( response ) {
+			TDE.publishProject( editor.project, files ).then( function( response ) {
 
 				preview.location = response;
 
