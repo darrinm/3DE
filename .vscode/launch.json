@@ -7,8 +7,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceRoot}/api-server/host.js",
+            "name": "Launch Server",
+            "program": "${workspaceRoot}/api-server/gcf-emu.js",
             "cwd": "${workspaceRoot}/api-server",
             "env": {
                 "GCLOUD_PROJECT": "de-io-3a257"
@@ -19,6 +19,24 @@
             "request": "attach",
             "name": "Attach to Process",
             "port": 5858
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Client",
+            "port": 9222,
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceRoot}/src",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/userDataDir"
+        },
+        {
+            "type": "composite",
+            "name": "Launch Both",
+            "configurationNames": [
+                "Launch Server",
+                "Launch Client"
+            ]
         }
     ]
 }
