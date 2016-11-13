@@ -71,6 +71,9 @@ function verifyToken(token) {
 
 function executeCommand(command, userId) {
 	switch (command.command) {
+		case 'publishProject':
+			return publishProject(command.projectId, userId);
+
 		case 'deletePublishedProject':
 			return deletePublishedProject(command.projectId, userId);
 
@@ -78,6 +81,14 @@ function executeCommand(command, userId) {
 			console.log('unknown command: ' + command.command);
 			return Promise.reject(501);
 	}
+}
+
+function publishProject(projectId, userId) {
+	// Gather and preprocess all the files to be published. (i.e. build)
+	// Delete existing published files (if any) on GCS (3de-pub bucket).
+	// Write the built files to GCS (3de-pub bucket).
+	// Add/update an entry in the 'published-project' database.
+	// Update the project's entry in the 'projects' database to indicate its published state.
 }
 
 function deletePublishedProject(projectId, userId) {
