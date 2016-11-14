@@ -1,11 +1,13 @@
 const storage = require('@google-cloud/storage')();
 const firebase = require('firebase');
+const request = require('request');
+
 var config = null;
 
 // APIs:
 // command: deletePublishedProject, projectId: <projectId>, token: <userToken>
-// NA: command: deletePublishedProjectFiles, projectId: <projectId>, token: <userToken> -- delete contents of an already published project before overwriting
-// NA: get temp upload url to <userName>/<safeProjectTitle>/
+// TODO: command: deletePublishedProjectFiles, projectId: <projectId>, token: <userToken> -- delete contents of an already published project before overwriting
+// TODO: get temp upload url to <userName>/<safeProjectTitle>/
 
 exports.api = function (request, response) {
 	response.setHeader('Access-Control-Allow-Origin', '*');
@@ -132,3 +134,122 @@ function deletePublishedProject(projectId, userId) {
 		});
 	});
 }
+
+// Get project owner, ownerName, title, description, thumbnail, created, modified
+function getProjectInfo(projectId, userId) {
+	var projectRef = firebase.database().ref('projects/' + userId + '/' + projectId);
+	return projectRef.once('value').then(function (snapshot) {
+		var projectInfo = snapshot.val();
+		return projectInfo;
+	});
+}
+
+// TODO: userName
+// TODO: safeTitle
+// TODO: runningOnLocalhost
+// TODO: vr
+// TODO: metadata? e.g. contentType
+// TODO: makePublic?
+function publishProjectFiles(projectId, userId, userName) {
+	var publishPath = userName + '/' + safeTitle;
+	var publishPrefix = 'gs://3de-pub/' + publishPath + '/';
+	var sourcePrefix = 'user/' + userId + '/' + projectId + '/';
+	var bucket = storage.bucket('de-io-3a257.appspot.com');
+	var pubBucket = storage.bucket('3de-pub');
+	var origin = runningOnLocalhost ? 'http://localhost:8080' : 'https://darrinm.github.io/3DE';
+
+	// Copy project.json -> app.json
+	// TODO: read and parse the project so, e.g. vr variable can be determined.
+	// Alternatively, write desired variables to the project table.
+	return bucket.file(sourcePrefix + 'project.json').copy(publishPrefix + 'app.json')
+
+	.then(function (data) {
+		// var newFile = data[0];
+		// var apiResponse = data[1];
+		return bucket.file(sourcePrefix + 'thumbnail.jpg').copy(publishPrefix + '/thumbnail.jpg');
+
+	// Use app/index.html as a template, injecting the project title and appropriate script includes.
+	}).then(function (data) {
+		return new Promise(function (resolve, reject) {
+			request('js/libs/app/index.html', function (error, response, content) {
+				if (error) {
+					return reject(error);
+				}
+
+				var includes = [];
+
+				if (vr) {
+					includes.push('<script src="js/VRControls.js"></script>');
+					includes.push('<script src="js/VREffect.js"></script>');
+					includes.push('<script src="js/WebVR.js"></script>');
+				}
+
+				content = content.replace('<!-- includes -->', includes.join('\n\t\t'));
+
+				// As per http://stackoverflow.com/questions/784586/convert-special-characters-to-html-in-javascript
+				// TODO: Node-ify
+				function htmlEncode(s) {
+					var el = document.createElement('div');
+					el.innerText = el.textContent = s;
+					s = el.innerHTML;
+					return s;
+				}
+
+				content = content.replace('<title>three.js</title>', '<title>' + htmlEncode(project.title) + '</title>');
+				return resolve(content);
+			});
+		});
+	}).then(function (content) {
+		return pubBucket.file(publishPath + '/index.html').createWriteStream().write(content); // TODO: end? and, not a promise
+	}).then(function (data) {
+		return copy('js/libs/app.js', 'js/app.js');
+	}).then(function (data) {
+		return copy('three.min.js', 'js/three.min.js');
+	}).then(function (data) {
+		if (vr) {
+			return copy('deps/VRControls.js', 'js/VRControls.js')
+			.then(function (data) {
+				return copy('deps/VREffect.js', 'js/VREffect.js');
+			}).then(function (data) {
+				return copy('deps/WebVR.js', 'js/WebVR.js');
+			});
+		}
+	});
+
+	function copy(src, dst) {
+		return request(origin + '/' + src).pipe(pubBucket.file(publishPath + '/' + dst).createWriteStream());
+	}
+}
+
+function publishFile(src, dstURL) {
+
+}
+
+function copyFile(srcURL, dstURL) {
+
+}
+
+
+/*
+function getContent(url) {
+  // return new pending promise
+  return new Promise((resolve, reject) => {
+    // select http or https module, depending on reqested url
+    const lib = url.startsWith('https') ? require('https') : require('http');
+    const request = lib.get(url, (response) => {
+      // handle http errors
+      if (response.statusCode < 200 || response.statusCode > 299) {
+         reject(new Error('Failed to load page, status code: ' + response.statusCode));
+       }
+      // temporary data holder
+      const body = [];
+      // on every content chunk, push it to the data array
+      response.on('data', (chunk) => body.push(chunk));
+      // we are done, resolve promise with those joined chunks
+      response.on('end', () => resolve(body.join('')));
+    });
+    // handle connection errors of the request
+    request.on('error', (err) => reject(err))
+    })
+}
+*/
