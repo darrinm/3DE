@@ -18,6 +18,12 @@ exports.api = function (request, response) {
         response.sendStatus(200);
         return;
     }
+    if (request.method == 'GET') {
+        response.send(JSON.stringify(isProduction()));
+        response.sendStatus(200);
+        response.end();
+        return;
+    }
     configure().then(function () {
         return verifyToken(request.body.token);
     }).then(function (userId) {
@@ -29,11 +35,6 @@ exports.api = function (request, response) {
         response.sendStatus(500);
         response.end();
     });
-};
-exports.api = function (request, response) {
-    response.send(JSON.stringify(process.env));
-    response.sendStatus(200);
-    response.end();
 };
 function configure() {
     if (config)
@@ -126,12 +127,13 @@ function getProjectInfo(projectId, userId) {
         return projectInfo;
     });
 }
-// TODO: runningOnLocalhost
 // TODO: vr
 // TODO: metadata? e.g. contentType
 // TODO: makePublic?
-var runningOnLocalhost = false;
-var vr = false;
+var vr = true;
+function isProduction() {
+    return process.env.NODE_ENV === 'production';
+}
 function publishProjectFiles(projectId, userId, userName, title) {
     // Remove characters that aren't URL friendly.
     var safeTitle = title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
@@ -142,7 +144,7 @@ function publishProjectFiles(projectId, userId, userName, title) {
     var pubBucket = storage.bucket('3de-pub');
     // When debugging locally copy the template files from the local web server.
     // When operating as the public cloud function copy the template files from the public web server.
-    var origin = runningOnLocalhost ? 'http://localhost:8080' : 'https://darrinm.github.io/3DE';
+    var origin = isProduction() ? 'https://darrinm.github.io/3DE' : 'http://localhost:8080';
     // Copy project.json -> app.json
     // TODO: read and parse the project so, e.g. vr variable can be determined.
     // Alternatively, write desired variables to the project table.

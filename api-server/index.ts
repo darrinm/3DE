@@ -35,6 +35,13 @@ exports.api = function (request: Request, response: Response) {
 		return;
 	}
 
+	if (request.method == 'GET') {
+		response.send(JSON.stringify(isProduction()));
+		response.sendStatus(200);
+		response.end();
+		return;
+	}
+
 	configure().then(function () {
 		return verifyToken(request.body.token);
 
@@ -51,11 +58,6 @@ exports.api = function (request: Request, response: Response) {
 	});
 }
 
-exports.api = function (request: Request, response: Response) {
-	response.send(JSON.stringify(process.env));
-	response.sendStatus(200);
-	response.end();
-}
 
 function configure() {
 	if (config)
@@ -160,12 +162,14 @@ function getProjectInfo(projectId: string, userId: string): Promise<any> {
 	}) as Promise<any>;
 }
 
-// TODO: runningOnLocalhost
 // TODO: vr
 // TODO: metadata? e.g. contentType
 // TODO: makePublic?
-var runningOnLocalhost = false;
-var vr = false;
+var vr = true;
+
+function isProduction(): boolean {
+	return process.env.NODE_ENV === 'production';
+}
 
 function publishProjectFiles(projectId: string, userId: string, userName: string, title: string) {
 	// Remove characters that aren't URL friendly.
@@ -179,7 +183,7 @@ function publishProjectFiles(projectId: string, userId: string, userName: string
 
 	// When debugging locally copy the template files from the local web server.
 	// When operating as the public cloud function copy the template files from the public web server.
-	var origin = runningOnLocalhost ? 'http://localhost:8080' : 'https://darrinm.github.io/3DE';
+	var origin = isProduction() ? 'https://darrinm.github.io/3DE' : 'http://localhost:8080';
 
 	// Copy project.json -> app.json
 	// TODO: read and parse the project so, e.g. vr variable can be determined.
