@@ -4,6 +4,16 @@ import * as admin from 'firebase-admin';
 import * as request from 'request';
 import { Request, Response } from 'express';
 
+interface ProjectInfo {
+	owner: string;
+	ownerName: string;
+	title: string;
+	description: string;
+	thumbnail: string;
+	created: string; // Date.toJSON
+	modified: string; // Date.toJSON
+}
+
 const storage = require('@google-cloud/storage')();
 
 var config: {} = null;
@@ -39,6 +49,12 @@ exports.api = function (request: Request, response: Response) {
 		response.sendStatus(500);
 		response.end();
 	});
+}
+
+exports.api = function (request: Request, response: Response) {
+	response.send(JSON.stringify(process.env));
+	response.sendStatus(200);
+	response.end();
 }
 
 function configure() {
@@ -93,15 +109,6 @@ function executeCommand(command: { command: string, projectId: string }, userId:
 	}
 }
 
-function publishProject(projectId: string, userId: string): Promise<any> {
-	// Gather and preprocess all the files to be published. (i.e. build)
-	// Delete existing published files (if any) on GCS (3de-pub bucket).
-	// Write the built files to GCS (3de-pub bucket).
-	// Add/update an entry in the 'published-project' database.
-	// Update the project's entry in the 'projects' database to indicate its published state.
-	return Promise.resolve(true);
-}
-
 function deletePublishedProject(projectId: string, userId: string): Promise<any> {
 	var publishedRef = db.ref('published-projects/' + projectId);
 	return publishedRef.once('value').then(function (snapshot) {
@@ -133,6 +140,17 @@ function deletePublishedProject(projectId: string, userId: string): Promise<any>
 	}) as Promise<any>;
 }
 
+function publishProject(projectId: string, userId: string): Promise<any> {
+	// Gather and preprocess all the files to be published. (i.e. build)
+	// Delete existing published files (if any) on GCS (3de-pub bucket).
+	// Write the built files to GCS (3de-pub bucket).
+	// Add/update an entry in the 'published-project' database.
+	// Update the project's entry in the 'projects' database to indicate its published state.
+	return getProjectInfo(projectId, userId).then(function (projectInfo: ProjectInfo) {
+		return publishProjectFiles(projectId, userId, projectInfo.ownerName, projectInfo.title);
+	});
+}
+
 // Get project owner, ownerName, title, description, thumbnail, created, modified
 function getProjectInfo(projectId: string, userId: string): Promise<any> {
 	var projectRef = db.ref('projects/' + userId + '/' + projectId);
@@ -142,20 +160,25 @@ function getProjectInfo(projectId: string, userId: string): Promise<any> {
 	}) as Promise<any>;
 }
 
-// TODO: userName
-// TODO: safeTitle
 // TODO: runningOnLocalhost
 // TODO: vr
 // TODO: metadata? e.g. contentType
 // TODO: makePublic?
-var safeTitle: string, runningOnLocalhost: boolean, vr: boolean, project: { title: string };
+var runningOnLocalhost = false;
+var vr = false;
 
-function publishProjectFiles(projectId: string, userId: string, userName: string) {
+function publishProjectFiles(projectId: string, userId: string, userName: string, title: string) {
+	// Remove characters that aren't URL friendly.
+	var safeTitle = title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
+
 	var publishPath = userName + '/' + safeTitle;
 	var publishPrefix = 'gs://3de-pub/' + publishPath + '/';
 	var sourcePrefix = 'user/' + userId + '/' + projectId + '/';
 	var bucket = storage.bucket('de-io-3a257.appspot.com');
 	var pubBucket = storage.bucket('3de-pub');
+
+	// When debugging locally copy the template files from the local web server.
+	// When operating as the public cloud function copy the template files from the public web server.
 	var origin = runningOnLocalhost ? 'http://localhost:8080' : 'https://darrinm.github.io/3DE';
 
 	// Copy project.json -> app.json
@@ -195,7 +218,7 @@ function publishProjectFiles(projectId: string, userId: string, userName: string
 					return s;
 				}
 
-				content = content.replace('<title>three.js</title>', '<title>' + htmlEncode(project.title) + '</title>');
+				content = content.replace('<title>three.js</title>', '<title>' + htmlEncode(title) + '</title>');
 				return resolve(content);
 			});
 		});
