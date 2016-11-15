@@ -33,5 +33,6 @@ google.auth.getApplicationDefault(function (err, authClient, projectId) {
 	}
 
 	app.post('/api', func.api);
+	app.get('/api', func.api);
 	app.listen(8081, function () { });
 });
