@@ -11,7 +11,16 @@
     "@google-cloud/storage": "^0.1.1",
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
-    "firebase": "^3.5.3",
+    "firebase": "^3.6.0",
     "googleapis": "^14.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.0.33",
+    "@types/express-serve-static-core": "^4.0.39",
+    "@types/form-data": "0.0.32",
+    "@types/mime": "0.0.29",
+    "@types/node": "^6.0.46",
+    "@types/request": "0.0.33",
+    "@types/serve-static": "^1.7.31"
   }
 }

@@ -1,15 +1,18 @@
-const storage = require('@google-cloud/storage')();
-const firebase = require('firebase');
-const request = require('request');
+import * as firebase from 'firebase';
+// TODO: consider request-promise
+import * as request from 'request';
+import { Request, Response } from 'express';
 
-var config = null;
+const storage = require('@google-cloud/storage')();
+
+var config: {} = null;
 
 // APIs:
 // command: deletePublishedProject, projectId: <projectId>, token: <userToken>
 // TODO: command: deletePublishedProjectFiles, projectId: <projectId>, token: <userToken> -- delete contents of an already published project before overwriting
 // TODO: get temp upload url to <userName>/<safeProjectTitle>/
 
-exports.api = function (request, response) {
+exports.api = function (request: Request, response: Response) {
 	response.setHeader('Access-Control-Allow-Origin', '*');
 	response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 	response.setHeader('Access-Control-Allow-Headers', 'content-type');
@@ -22,14 +25,14 @@ exports.api = function (request, response) {
 	configure().then(function () {
 		return verifyToken(request.body.token);
 
-	}).then(function (userId) {
+	}).then(function (userId: string) {
 		return executeCommand(request.body, userId);
 
-	}).then(function (status) {
+	}).then(function (status: number) {
 		response.sendStatus(status);
 		response.end();
 
-	}, function (err) {
+	}, function (err: string) {
 		response.sendStatus(500);
 		response.end();
 	});
@@ -43,7 +46,7 @@ function configure() {
 	// NOTE: Documentation lies. download requires a callback and does NOT return a promise.
 	// https://googlecloudplatform.github.io/google-cloud-node/#/docs/storage/0.4.0/storage/file
 	return new Promise(function (resolve, reject) {
-		storage.bucket('de-io-3a257.appspot.com').file('api-config.json').download(function (err, data) {
+		storage.bucket('de-io-3a257.appspot.com').file('api-config.json').download(function (err: string, data: string) {
 			if (err) {
 				console.log('api-config.json download err: ' + err);
 				reject(err);
@@ -62,7 +65,7 @@ function configure() {
 	});
 }
 
-function verifyToken(token) {
+function verifyToken(token: string) {
 	return firebase.auth().verifyIdToken(token).then(function (decodedToken) {
 		var uid = decodedToken.uid;
 		return uid;
@@ -71,7 +74,7 @@ function verifyToken(token) {
 	});
 }
 
-function executeCommand(command, userId) {
+function executeCommand(command: { command: string, projectId: string }, userId: string): Promise<any> {
 	switch (command.command) {
 		case 'publishProject':
 			return publishProject(command.projectId, userId);
@@ -85,15 +88,16 @@ function executeCommand(command, userId) {
 	}
 }
 
-function publishProject(projectId, userId) {
+function publishProject(projectId: string, userId: string): Promise<any> {
 	// Gather and preprocess all the files to be published. (i.e. build)
 	// Delete existing published files (if any) on GCS (3de-pub bucket).
 	// Write the built files to GCS (3de-pub bucket).
 	// Add/update an entry in the 'published-project' database.
 	// Update the project's entry in the 'projects' database to indicate its published state.
+	return Promise.resolve(true);
 }
 
-function deletePublishedProject(projectId, userId) {
+function deletePublishedProject(projectId: string, userId: string): Promise<any> {
 	var publishedRef = firebase.database().ref('published-projects/' + projectId);
 	return publishedRef.once('value').then(function (snapshot) {
 		var project = snapshot.val();
@@ -119,11 +123,11 @@ function deletePublishedProject(projectId, userId) {
 		// TODO: can't rely on client defined project.path
 		// More documentation lies WRT to returning a promise.
 		return new Promise(function (resolve, reject) {
-			storage.bucket('3de-pub').deleteFiles({ prefix: project.path + '/' }, function (err) {
+			storage.bucket('3de-pub').deleteFiles({ prefix: project.path + '/' }, function (err: string) {
 				if (err) {
 					console.log('deletePublishedProject deleteFiles err: ' + err);
 					reject(err);
-					return;
+					return Promise.reject(err);
 				}
 
 				// Delete the published-projects record.
@@ -132,16 +136,16 @@ function deletePublishedProject(projectId, userId) {
 				});
 			});
 		});
-	});
+	}) as Promise<any>;
 }
 
 // Get project owner, ownerName, title, description, thumbnail, created, modified
-function getProjectInfo(projectId, userId) {
+function getProjectInfo(projectId: string, userId: string): Promise<any> {
 	var projectRef = firebase.database().ref('projects/' + userId + '/' + projectId);
 	return projectRef.once('value').then(function (snapshot) {
 		var projectInfo = snapshot.val();
 		return projectInfo;
-	});
+	}) as Promise<any>;
 }
 
 // TODO: userName
@@ -150,7 +154,9 @@ function getProjectInfo(projectId, userId) {
 // TODO: vr
 // TODO: metadata? e.g. contentType
 // TODO: makePublic?
-function publishProjectFiles(projectId, userId, userName) {
+var safeTitle: string, runningOnLocalhost: boolean, vr: boolean, project: { title: string };
+
+function publishProjectFiles(projectId: string, userId: string, userName: string) {
 	var publishPath = userName + '/' + safeTitle;
 	var publishPrefix = 'gs://3de-pub/' + publishPath + '/';
 	var sourcePrefix = 'user/' + userId + '/' + projectId + '/';
@@ -163,20 +169,20 @@ function publishProjectFiles(projectId, userId, userName) {
 	// Alternatively, write desired variables to the project table.
 	return bucket.file(sourcePrefix + 'project.json').copy(publishPrefix + 'app.json')
 
-	.then(function (data) {
+	.then(function (data: any[]) {
 		// var newFile = data[0];
 		// var apiResponse = data[1];
 		return bucket.file(sourcePrefix + 'thumbnail.jpg').copy(publishPrefix + '/thumbnail.jpg');
 
 	// Use app/index.html as a template, injecting the project title and appropriate script includes.
-	}).then(function (data) {
+	}).then(function (data: any[]) {
 		return new Promise(function (resolve, reject) {
-			request('js/libs/app/index.html', function (error, response, content) {
+			request('js/libs/app/index.html', function (error: string, response: string, content: string) {
 				if (error) {
 					return reject(error);
 				}
 
-				var includes = [];
+				var includes: string[] = [];
 
 				if (vr) {
 					includes.push('<script src="js/VRControls.js"></script>');
@@ -188,7 +194,7 @@ function publishProjectFiles(projectId, userId, userName) {
 
 				// As per http://stackoverflow.com/questions/784586/convert-special-characters-to-html-in-javascript
 				// TODO: Node-ify
-				function htmlEncode(s) {
+				function htmlEncode(s: string) {
 					var el = document.createElement('div');
 					el.innerText = el.textContent = s;
 					s = el.innerHTML;
@@ -199,33 +205,33 @@ function publishProjectFiles(projectId, userId, userName) {
 				return resolve(content);
 			});
 		});
-	}).then(function (content) {
+	}).then(function (content: string) {
 		return pubBucket.file(publishPath + '/index.html').createWriteStream().write(content); // TODO: end? and, not a promise
-	}).then(function (data) {
+	}).then(function (data: any[]) {
 		return copy('js/libs/app.js', 'js/app.js');
-	}).then(function (data) {
+	}).then(function (data: any[]) {
 		return copy('three.min.js', 'js/three.min.js');
-	}).then(function (data) {
+	}).then(function (data: any[]) {
 		if (vr) {
 			return copy('deps/VRControls.js', 'js/VRControls.js')
-			.then(function (data) {
+			.then(function (data: any[]) {
 				return copy('deps/VREffect.js', 'js/VREffect.js');
-			}).then(function (data) {
+			}).then(function (data: any[]) {
 				return copy('deps/WebVR.js', 'js/WebVR.js');
 			});
 		}
 	});
 
-	function copy(src, dst) {
+	function copy(src: string, dst: string) {
 		return request(origin + '/' + src).pipe(pubBucket.file(publishPath + '/' + dst).createWriteStream());
 	}
 }
 
-function publishFile(src, dstURL) {
+function publishFile(src: string, dstURL: string) {
 
 }
 
-function copyFile(srcURL, dstURL) {
+function copyFile(srcURL: string, dstURL: string) {
 
 }
 

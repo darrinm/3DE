@@ -1,10 +1,14 @@
 ## [Try it now.](https://darrinm.github.io/3DE)
 
 ## Install
-< nothing, except for testing (see below) >
+```bash
+npm install
+```
 
 ## Build
-< nothing >
+```bash
+tsc
+```
 
 ## Deploy
 ```bash
@@ -16,7 +20,6 @@ bin/deploy-api-server
 ```bash
 gcloud auth application-default login
 cd api-server
-npm install
 node gcf-emu.js
 http --verbose POST :8081/api <command.json # needs a current user token
 
