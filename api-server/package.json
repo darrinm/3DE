@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/darrinm/3DE.git"
   },
+  "scripts": {
+    "start": "npm run build:live",
+    "build:live": "GCLOUD_PROJECT=de-io-3a257 nodemon --ext js,ts,conf --exec ./node_modules/.bin/ts-node gcf-emu.js"
+  },
   "dependencies": {
     "@google-cloud/storage": "^0.1.1",
     "body-parser": "^1.15.2",
@@ -23,6 +27,9 @@
     "@types/mime": "0.0.29",
     "@types/node": "^6.0.46",
     "@types/request": "0.0.33",
-    "@types/serve-static": "^1.7.31"
+    "@types/serve-static": "^1.7.31",
+    "nodemon": "^1.11.0",
+    "ts-node": "^1.7.0",
+    "typescript": "^2.0.9"
   }
 }
