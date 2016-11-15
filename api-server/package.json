@@ -12,9 +12,11 @@
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "firebase": "^3.6.0",
+    "firebase-admin": "^4.0.1",
     "googleapis": "^14.2.0"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.34",
     "@types/express": "^4.0.33",
     "@types/express-serve-static-core": "^4.0.39",
     "@types/form-data": "0.0.32",

@@ -10,6 +10,7 @@
             "name": "Launch Server",
             "program": "${workspaceRoot}/api-server/gcf-emu.js",
             "cwd": "${workspaceRoot}/api-server",
+            "sourceMaps": true,
             "env": {
                 "GCLOUD_PROJECT": "de-io-3a257"
             }

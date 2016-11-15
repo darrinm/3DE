@@ -1,4 +1,5 @@
-import * as firebase from 'firebase';
+import * as firebase from 'firebase'; // Because firebase-admin is not fully typed!
+import * as admin from 'firebase-admin';
 // TODO: consider request-promise
 import * as request from 'request';
 import { Request, Response } from 'express';
@@ -6,6 +7,8 @@ import { Request, Response } from 'express';
 const storage = require('@google-cloud/storage')();
 
 var config: {} = null;
+var db: firebase.database.Database;
+var auth: firebase.auth.Auth;
 
 // APIs:
 // command: deletePublishedProject, projectId: <projectId>, token: <userToken>
@@ -55,18 +58,27 @@ function configure() {
 			config = JSON.parse(data);
 			console.log('config loaded');
 
+			admin.initializeApp({
+				credential: admin.credential.cert(config),
+//				credential: admin.credential.applicationDefault(),
+				databaseURL: 'https://de-io-3a257.firebaseio.com'
+			});
+			auth = admin.auth() as any as firebase.auth.Auth;
+			db = admin.database() as any as firebase.database.Database;
+/*
 			var firebaseConfig = {
 				serviceAccount: config,
 				databaseURL: 'https://de-io-3a257.firebaseio.com'
 			};
 			firebase.initializeApp(firebaseConfig);
+*/
 			resolve(data);
 		});
 	});
 }
 
 function verifyToken(token: string) {
-	return firebase.auth().verifyIdToken(token).then(function (decodedToken) {
+	return auth.verifyIdToken(token).then(function (decodedToken) {
 		var uid = decodedToken.uid;
 		return uid;
 	}).catch(function (error) {
@@ -98,7 +110,7 @@ function publishProject(projectId: string, userId: string): Promise<any> {
 }
 
 function deletePublishedProject(projectId: string, userId: string): Promise<any> {
-	var publishedRef = firebase.database().ref('published-projects/' + projectId);
+	var publishedRef = db.ref('published-projects/' + projectId);
 	return publishedRef.once('value').then(function (snapshot) {
 		var project = snapshot.val();
 		if (project == null)
@@ -141,7 +153,7 @@ function deletePublishedProject(projectId: string, userId: string): Promise<any>
 
 // Get project owner, ownerName, title, description, thumbnail, created, modified
 function getProjectInfo(projectId: string, userId: string): Promise<any> {
-	var projectRef = firebase.database().ref('projects/' + userId + '/' + projectId);
+	var projectRef = db.ref('projects/' + userId + '/' + projectId);
 	return projectRef.once('value').then(function (snapshot) {
 		var projectInfo = snapshot.val();
 		return projectInfo;
