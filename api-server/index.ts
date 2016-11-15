@@ -46,7 +46,7 @@ function configure() {
 		return Promise.resolve(true);
 
 	console.log('downloading api-config.json');
-	// NOTE: Documentation lies. download requires a callback and does NOT return a promise.
+	// TODO: try using the promise form of download again.
 	// https://googlecloudplatform.github.io/google-cloud-node/#/docs/storage/0.4.0/storage/file
 	return new Promise(function (resolve, reject) {
 		storage.bucket('de-io-3a257.appspot.com').file('api-config.json').download(function (err: string, data: string) {
@@ -65,13 +65,6 @@ function configure() {
 			});
 			auth = admin.auth() as any as firebase.auth.Auth;
 			db = admin.database() as any as firebase.database.Database;
-/*
-			var firebaseConfig = {
-				serviceAccount: config,
-				databaseURL: 'https://de-io-3a257.firebaseio.com'
-			};
-			firebase.initializeApp(firebaseConfig);
-*/
 			resolve(data);
 		});
 	});
@@ -120,20 +113,9 @@ function deletePublishedProject(projectId: string, userId: string): Promise<any>
 		}
 		console.log(JSON.stringify(project));
 
-		/* If we want to scope firebase calls to the user.
-		var firebaseConfig = {
-			serviceAccount: config,
-			databaseURL: 'https://de-io-3a257.firebaseio.com',
-			databaseAuthVariableOverride: {
-    			uid: userId
-			}
-		};
-		firebase.initializeApp(firebaseConfig, 'asUser' + userId);
-		*/
-
 		// Delete all the published project files.
 		// TODO: can't rely on client defined project.path
-		// More documentation lies WRT to returning a promise.
+		// TODO: try using the promise form of deleteFiles again.
 		return new Promise(function (resolve, reject) {
 			storage.bucket('3de-pub').deleteFiles({ prefix: project.path + '/' }, function (err: string) {
 				if (err) {
