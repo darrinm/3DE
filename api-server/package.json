@@ -3,6 +3,7 @@
   "description": "3DE API server",
   "version": "0.0.1",
   "private": true,
+  "main": "build",
   "repository": {
     "type": "git",
     "url": "https://github.com/darrinm/3DE.git"
