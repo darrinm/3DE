@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 gcloud alpha functions deploy api --trigger-http --timeout 120 \
 --source-url https://source.developers.google.com/p/de-io-3a257/r/default \
---source-path /api-server --source-branch master
+--source-path /api-server/build --source-branch master

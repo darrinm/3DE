@@ -20,8 +20,6 @@ exports.api = function (request, response) {
     }
     if (request.method == 'GET') {
         response.send(JSON.stringify(isProduction()));
-        response.sendStatus(200);
-        response.end();
         return;
     }
     configure().then(function () {

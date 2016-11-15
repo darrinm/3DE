@@ -37,8 +37,6 @@ exports.api = function (request: Request, response: Response) {
 
 	if (request.method == 'GET') {
 		response.send(JSON.stringify(isProduction()));
-		response.sendStatus(200);
-		response.end();
 		return;
 	}
 

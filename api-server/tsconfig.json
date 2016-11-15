@@ -4,7 +4,8 @@
 		"target": "es6",
 		"noImplicitAny": true,
 		"sourceMap": true,
-		"noImplicitReturns": true
+		"noImplicitReturns": true,
+		"outDir": "build"
 	},
 	"files": [
 		"index.ts"
