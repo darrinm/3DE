@@ -1,4 +1,32 @@
 #!/usr/bin/env bash
+if [ $# -eq 0 ]; then
+    # build
+    echo "Building..."
+    cd api-server && tsc && cd ..
+    if [ "$?" = "1" ]; then
+        echo "Compile failed :("
+        exit 1
+    fi
+
+    # copy just the files we want to deploy to a temp dir (leave e.g. node_modules behind)
+    mkdir deploy-tmp && \
+    cp api-server/package.json deploy-tmp && \
+    mkdir deploy-tmp/build && \
+    cp api-server/build/* deploy-tmp/build
+    if [ "$?" = "1" ]; then
+        echo "Deploy prep failed :("
+        exit 1
+    fi
+
+    # deploy
+    echo "Deploying..."
+    gcloud alpha functions deploy api --trigger-http --timeout 120 \
+    --stage-bucket 3de-api-server-stage --local-path deploy-tmp
+
+    rm -rf deploy-tmp
+    exit $?
+fi
+
 gcloud alpha functions deploy api --trigger-http --timeout 120 \
 --source-url https://source.developers.google.com/p/de-io-3a257/r/default \
 --source-path /api-server --source-branch master
