@@ -65,7 +65,7 @@ Menubar.File = function ( editor ) {
 	// Publish (3DE.io)
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Publish' );
+	option.setTextContent( 'Save & Publish' );
 	option.onClick( function() {
 
 		// Must be signed in to publish.
@@ -81,14 +81,15 @@ Menubar.File = function ( editor ) {
 		// Open the preview window now (on click event) so it won't get blocked.
 		var preview = window.open( '', 'preview' );
 
-		gatherFiles( function( files ) {
+		var output = getSerializedProject();
 
-			// Create a thumbnail for the project.
-			var image = TDE.createThumbnail( editor );
+		// TODO: saving/saved indicator
+		// TODO: error UX
+		TDE.saveProject( editor.project, output ).then (function() {
 
-			files.push( { name: 'thumbnail.jpg', data: image } );
+			console.log( 'saved ' + editor.project.title );
 
-			TDE.publishProject( editor.project, files ).then( function( response ) {
+			TDE.publishProject( editor.project.id ).then( function( response ) {
 
 				preview.location = response;
 
@@ -98,6 +99,11 @@ Menubar.File = function ( editor ) {
 				preview.close();
 
 			} );
+		},
+		function() {
+
+			console.log( 'failed to save ' + editor.project.title );
+			preview.close();
 
 		} );
 
@@ -440,7 +446,7 @@ Menubar.File = function ( editor ) {
 
 	var option = new UI.Row();
 	option.setClass( 'option' );
-	option.setTextContent( 'Save (Dropbox)...' );
+	option.setTextContent( 'Save to Dropbox...' );
 	option.onClick( function () {
 
 		var output = getSerializedProject();
