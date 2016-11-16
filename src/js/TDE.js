@@ -28,7 +28,7 @@ TDE.saveProject = function ( project, serializedProject ) {
 			var projectRef = firebase.database().ref( 'projects/' + user.uid + '/' + project.id );
 			return projectRef.set( {
 				'owner': user.uid,
-				'ownerName': userName,
+				'ownerName': userName, // TODO: don't trust client to specify this
 				'title': project.title,
 				'description': '<na>',
 				'thumbnail': thumbRef.fullPath,
@@ -66,34 +66,7 @@ TDE.loadProject = function ( projectId ) {
 
 TDE.deletePublishedProject = function ( projectId ) {
 
-	var user = firebase.auth().currentUser;
-	return user.getToken(/* forceRefresh */ true).then(function (idToken) {
-		// Send token to your backend via HTTPS
-
-		console.log( 'token: ' + idToken );
-
-		return new Promise( function( resolve, reject ) {
-			var xhr = new XMLHttpRequest();
-			xhr.open( 'POST', TDE.serverURL + '/api', true );
-			xhr.setRequestHeader( 'Content-Type', 'application/json;charset=UTF-8' );
-
-			xhr.onload = function( event ) {
-
-				if ( this.status === 200 || this.status === 0 ) {
-
-					resolve( this.responseText );
-
-				} else {
-
-					reject( this.status );
-
-				}
-
-			}
-			xhr.send( JSON.stringify( { command: 'deletePublishedProject', projectId: projectId, token: idToken } ) );
-		});
-
-	});
+	return callAPI( { command: 'deletePublishedProject', projectId: projectId } );
 
 }
 
@@ -128,8 +101,48 @@ TDE.deleteProject = function ( projectId ) {
 
 }
 
+TDE.publishProject = function ( projectId ) {
+
+	return callAPI( { command: 'publishProject', projectId: projectId } );
+
+}
+
+function callAPI( json ) {
+
+	var user = firebase.auth().currentUser;
+
+	return user.getToken( /* forceRefresh */ true ).then( function ( idToken ) {
+//		console.log( 'token: ' + idToken );
+		json.token = idToken;
+
+		return new Promise( function( resolve, reject ) {
+			var xhr = new XMLHttpRequest();
+			xhr.open( 'POST', TDE.serverURL + '/api', true );
+			xhr.setRequestHeader( 'Content-Type', 'application/json;charset=UTF-8' );
+
+			xhr.onload = function( event ) {
+
+				if ( this.status === 200 || this.status === 0 ) {
+
+					resolve( this.responseText );
+
+				} else {
+
+					reject( this.status );
+
+				}
+
+			}
+
+			xhr.send( JSON.stringify( json ) );
+		});
+
+	});
+
+}
+
 // TODO: delete old files
-TDE.publishProject = function ( project, files ) {
+TDE.XpublishProject = function ( project, files ) {
 
 	var publishBucket = '3de-pub';
 	var user = firebase.auth().currentUser;

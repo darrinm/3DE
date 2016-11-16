@@ -11,6 +11,7 @@
             "program": "${workspaceRoot}/api-server/gcf-emu.js",
             "cwd": "${workspaceRoot}/api-server",
             "sourceMaps": true,
+            "outDir": "${workspaceRoot}/api-server/build",
             "env": {
                 "GCLOUD_PROJECT": "de-io-3a257"
             }
@@ -18,8 +19,10 @@
         {
             "type": "node",
             "request": "attach",
-            "name": "Attach to Process",
-            "port": 5858
+            "name": "Attach to Server",
+            "port": 5858,
+            "sourceMaps": true,
+            "outDir": "${workspaceRoot}/api-server/build"
         },
         {
             "type": "chrome",
@@ -36,6 +39,14 @@
             "name": "Launch Both",
             "configurationNames": [
                 "Launch Server",
+                "Launch Client"
+            ]
+        },
+        {
+            "type": "composite",
+            "name": "Attach to Server, Launch Client",
+            "configurationNames": [
+                "Attach to Server",
                 "Launch Client"
             ]
         }

@@ -19,7 +19,8 @@
     "firebase": "^3.6.0",
     "firebase-admin": "^4.0.1",
     "googleapis": "^14.2.0",
-    "request": "^2.78.0"
+    "request": "^2.78.0",
+    "request-promise-native": "^1.0.3"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
@@ -29,6 +30,7 @@
     "@types/mime": "0.0.29",
     "@types/node": "^6.0.46",
     "@types/request": "0.0.33",
+    "@types/request-promise-native": "^1.0.2",
     "@types/serve-static": "^1.7.31",
     "nodemon": "^1.11.0",
     "ts-node": "^1.7.0",

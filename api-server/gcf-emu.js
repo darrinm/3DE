@@ -1,7 +1,7 @@
 var google = require('googleapis');
 var express = require('express');
 var bodyParser = require('body-parser');
-var func = require('./index');
+var func = require('./build/index');
 
 var app = express();
 
