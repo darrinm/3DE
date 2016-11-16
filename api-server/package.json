@@ -10,10 +10,10 @@
   },
   "scripts": {
     "start": "npm run build:live",
-    "build:live": "GCLOUD_PROJECT=de-io-3a257 nodemon --ext js,ts,conf --exec ./node_modules/.bin/ts-node gcf-emu.js"
+    "build:live": "GCLOUD_PROJECT=de-io-3a257 nodemon --watch build --ext js,ts,json --debug gcf-emu.js"
   },
   "dependencies": {
-    "@google-cloud/storage": "^0.1.1",
+    "@google-cloud/storage": "^0.4.0",
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
     "firebase": "^3.6.0",
