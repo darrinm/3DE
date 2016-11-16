@@ -27,6 +27,7 @@ if [ $# -eq 0 ]; then
     exit $?
 fi
 
+# old way that has build directory under source control (a pain)
 gcloud alpha functions deploy api --trigger-http --timeout 120 \
 --source-url https://source.developers.google.com/p/de-io-3a257/r/default \
 --source-path /api-server --source-branch master
