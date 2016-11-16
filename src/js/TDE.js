@@ -141,50 +141,6 @@ function callAPI( json ) {
 
 }
 
-// TODO: delete old files
-TDE.XpublishProject = function ( project, files ) {
-
-	var publishBucket = '3de-pub';
-	var user = firebase.auth().currentUser;
-	var userName = user.displayName;
-
-	// Remove characters that aren't URL friendly.
-	var safeTitle = project.title.replace(/[ %\/\?\:\&\=\+\$\#\,\@\;]/g, '');
-	var publishName = userName + '/' + safeTitle;
-	var publishPath = publishBucket + '/' + publishName;
-
-	var uploads = [];
-	files.forEach( function( file ) {
-
-		uploads.push( TDE.upload ( publishBucket, publishName + '/' + file.name, file.data ) );
-
-	} );
-
-	return Promise.all( uploads ).then( function( resources ) {
-
-		var playURL = 'https://storage.googleapis.com/' + publishPath + '/index.html';
-		var thumbnailURL = 'https://storage.googleapis.com/' + publishPath + '/thumbnail.jpg';
-
-		// Add to published project database.
-
-		var publishedRef = firebase.database().ref( 'published-projects/' + project.id );
-		publishedRef.set( {
-			owner: user.uid,
-			ownerName: userName,
-			title: project.title,
-			description: '<na>',
-			path: publishName,
-			play: playURL,
-			thumbnail: thumbnailURL,
-			publishedOn: ( new Date ).toJSON(),
-			vr: project.vr ? true : false
-		} );
-		return playURL;
-
-	} );
-
-}
-
 // TODO: don't allow public write access!
 TDE.upload = function( bucket, object, data ) {
 

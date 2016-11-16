@@ -1,6 +1,5 @@
 import * as firebase from 'firebase'; // Because firebase-admin is not fully typed!
 import * as admin from 'firebase-admin';
-// TODO: consider request-promise
 import * as request from 'request';
 import * as requestp from 'request-promise-native';
 import { Request, Response } from 'express';
@@ -48,11 +47,12 @@ exports.api = function (request: Request, response: Response) {
 			if (result)
 				response.send(result);
 			else
-				response.sendStatus(200);
+				response.status(200);
 			response.end();
 
-		}, (err: string) => {
-			response.sendStatus(500);
+		}, (err: any) => {
+			console.log(JSON.stringify(err));
+			response.status(500).json(err);
 			response.end();
 		});
 }
@@ -107,7 +107,6 @@ function deletePublishedProject(projectId: string, userId: string): Promise<any>
 		if (project.owner != userId) {
 			throw new Error('Only the project owner can delete it');
 		}
-		console.log(JSON.stringify(project));
 
 		// Delete all the published project files.
 		// TODO: can't trust client defined project.path
@@ -175,6 +174,18 @@ function isProduction(): boolean {
 	return process.env.NODE_ENV === 'production';
 }
 
+function getFileOptions(name?: string): any {
+	let options = {
+		predefinedAcl: 'publicRead',
+		metadata: {
+			contentType: 'text/plain', cacheControl: 'private, max-age=0, no-transform'
+		}
+	}
+	if (name)
+		options.metadata.contentType = getContentType(name);
+	return options;
+}
+
 const mimeTypes: { [index: string]: string } = {
 	html: 'text/html',
 	json: 'application/json',
@@ -184,19 +195,8 @@ const mimeTypes: { [index: string]: string } = {
 	jpeg: 'image/jpeg'
 }
 
-let options = {
-	predefinedAcl: 'publicRead',
-	metadata: {
-		contentType: '', cacheControl: 'private, max-age=0, no-transform'
-	}
-}
-
 function getContentType(name: string): string {
 	return mimeTypes[name.split('.').pop().toLowerCase()] || 'text/plain';
-}
-
-function setContentType(name: string) {
-	options.metadata.contentType = getContentType(name);
 }
 
 function publishProjectFiles(projectId: string, publishName: string, userId: string, title: string) {
@@ -206,17 +206,19 @@ function publishProjectFiles(projectId: string, publishName: string, userId: str
 	var pubBucket = storage.bucket(publishBucketName);
 
 	function setMetadata(file: any): Promise<any> {
-		setContentType(file.name);
-		return file.makePublic().then(() => file.setMetadata(options.metadata));
+		return file.makePublic().then(() => file.setMetadata(getFileOptions(file.name).metadata));
 	}
 
 	function copy(src: string, dst: string): Promise<any> {
 		const dstFile = pubBucket.file(publishName + '/' + dst);
 		return new Promise((resolve, reject) => {
-			setContentType(dst);
-			request(origin + '/' + src).pipe(dstFile.createWriteStream(options))
+			request(origin + '/' + src).pipe(dstFile.createWriteStream(getFileOptions(dst)))
 				.on('finish', () => resolve(true))
-				.on('error', (err: any) => reject(err));
+				.on('error', (err: any) => {
+					console.log('failed some part of copying ' + dst);
+					console.log(err);
+					reject(err)
+				});
 		});
 	}
 
@@ -263,8 +265,7 @@ function publishProjectFiles(projectId: string, publishName: string, userId: str
 
 		return html.replace('<title>three.js</title>', '<title>' + htmlEncode(title) + '</title>');
 	}).then((html: string) => {
-		setContentType('index.html');
-		return pubBucket.file(publishName + '/index.html').save(html, options);
+		return pubBucket.file(publishName + '/index.html').save(html, getFileOptions('index.html'));
 	}));
 
 	promises.push(copy('js/libs/app.js', 'js/app.js'));
