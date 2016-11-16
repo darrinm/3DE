@@ -43,18 +43,18 @@ exports.api = function (request: Request, response: Response) {
 	}
 
 	configure().then(() => verifyToken(request.body.token))
-	.then((userId: string) => executeCommand(request.body, userId))
-	.then((result: string) => {
-		if (result)
-			response.send(result);
-		else
-			response.sendStatus(200);
-		response.end();
+		.then((userId: string) => executeCommand(request.body, userId))
+		.then((result: string) => {
+			if (result)
+				response.send(result);
+			else
+				response.sendStatus(200);
+			response.end();
 
-	}, (err: string) => {
-		response.sendStatus(500);
-		response.end();
-	});
+		}, (err: string) => {
+			response.sendStatus(500);
+			response.end();
+		});
 }
 
 function configure() {
@@ -63,23 +63,23 @@ function configure() {
 
 	console.log('downloading api-config.json');
 	return storage.bucket('de-io-3a257.appspot.com').file('api-config.json').download()
-	.then((data: string) => {
-		config = JSON.parse(data);
-		console.log('config loaded');
+		.then((data: string) => {
+			config = JSON.parse(data);
+			console.log('config loaded');
 
-		admin.initializeApp({
-			credential: admin.credential.cert(config),
-//			credential: admin.credential.applicationDefault(),
-			databaseURL: 'https://de-io-3a257.firebaseio.com'
+			admin.initializeApp({
+				credential: admin.credential.cert(config),
+				//			credential: admin.credential.applicationDefault(),
+				databaseURL: 'https://de-io-3a257.firebaseio.com'
+			});
+			auth = admin.auth() as any as firebase.auth.Auth;
+			db = admin.database() as any as firebase.database.Database;
 		});
-		auth = admin.auth() as any as firebase.auth.Auth;
-		db = admin.database() as any as firebase.database.Database;
-	});
 }
 
 function verifyToken(token: string) {
 	return auth.verifyIdToken(token).then((decodedToken) => decodedToken.uid)
-	.catch((error) => console.log('verifyIdToken err: ' + JSON.stringify(error)));
+		.catch((error) => console.log('verifyIdToken err: ' + JSON.stringify(error)));
 }
 
 function executeCommand(command: { command: string, projectId: string }, userId: string): Promise<any> {
@@ -110,13 +110,16 @@ function deletePublishedProject(projectId: string, userId: string): Promise<any>
 		console.log(JSON.stringify(project));
 
 		// Delete all the published project files.
-		// TODO: can't rely on client defined project.path
+		// TODO: can't trust client defined project.path
 		return storage.bucket(publishBucketName).deleteFiles({ prefix: project.path + '/' })
 
-		// Delete the published-projects record.
-		.then(() =>	publishedRef.remove());
+			// Delete the published-projects record.
+			.then(() => publishedRef.remove());
 	}) as Promise<any>; // not firebase.Promise<any>
 }
+
+// TODO: vr
+var vr = true;
 
 function publishProject(projectId: string, userId: string): Promise<any> {
 	console.log('publishProject ' + projectId);
@@ -164,13 +167,8 @@ function publishProject(projectId: string, userId: string): Promise<any> {
 function getProjectInfo(projectId: string, userId: string): Promise<any> {
 	var projectRef = db.ref('projects/' + userId + '/' + projectId);
 	return projectRef.once('value')
-	.then((snapshot) => snapshot.val()) as Promise<any>; // not firebase.Promise<any>
+		.then((snapshot) => snapshot.val()) as Promise<any>; // not firebase.Promise<any>
 }
-
-// TODO: vr
-// TODO: metadata? e.g. contentType
-// TODO: makePublic?
-var vr = true;
 
 // Are we running on the production server or testing/developing locally?
 function isProduction(): boolean {
@@ -194,7 +192,7 @@ let options = {
 }
 
 function getContentType(name: string): string {
-	return mimeTypes[name.split( '.' ).pop().toLowerCase()] || 'text/plain';
+	return mimeTypes[name.split('.').pop().toLowerCase()] || 'text/plain';
 }
 
 function setContentType(name: string) {
@@ -202,10 +200,9 @@ function setContentType(name: string) {
 }
 
 function publishProjectFiles(projectId: string, publishName: string, userId: string, title: string) {
-
 	var publishPrefix = 'gs://' + publishBucketName + '/' + publishName + '/';
 	var sourcePrefix = 'user/' + userId + '/' + projectId + '/';
-	var bucket = storage.bucket('de-io-3a257.appspot.com');
+	var privBucket = storage.bucket('de-io-3a257.appspot.com');
 	var pubBucket = storage.bucket(publishBucketName);
 
 	function setMetadata(file: any): Promise<any> {
@@ -213,73 +210,70 @@ function publishProjectFiles(projectId: string, publishName: string, userId: str
 		return file.makePublic().then(() => file.setMetadata(options.metadata));
 	}
 
-	// When debugging locally copy the template files from the local web server.
-	// When operating as the public cloud function copy the template files from the public web server.
-	var origin = isProduction() ? 'https://darrinm.github.io/3DE' : 'http://localhost:8080';
-
-	// Copy project.json -> app.json
-	// TODO: read and parse the project so, e.g. vr variable can be determined.
-	// Alternatively, write desired variables to the project table.
-	return bucket.file(sourcePrefix + 'project.json').copy(publishPrefix + 'app.json')
-	.then((data: any[]) => setMetadata(data[0]))
-	// var newFile = data[0];
-	// var apiResponse = data[1];
-	.then((data: any[]) => bucket.file(sourcePrefix + 'thumbnail.jpg').copy(publishPrefix + 'thumbnail.jpg'))
-	.then((data: any[]) => setMetadata(data[0]))
-
-	// Use app/index.html as a template, injecting the project title and appropriate script includes.
-	.then((data: any[]) => {
-		return requestp(origin + '/js/libs/app/index.html').then((html: string) => {
-			var includes: string[] = [];
-
-			if (vr) {
-				includes.push('<script src="js/VRControls.js"></script>');
-				includes.push('<script src="js/VREffect.js"></script>');
-				includes.push('<script src="js/WebVR.js"></script>');
-			}
-
-			html = html.replace('<!-- includes -->', includes.join('\n\t\t'));
-
-			// As per http://stackoverflow.com/questions/784586/convert-special-characters-to-html-in-javascript
-			// TODO: Node-ify
-			function htmlEncode(s: string) {
-				/* TODO:
-				var el = document.createElement('div');
-				el.innerText = el.textContent = s;
-				s = el.innerHTML;
-				*/
-				return s;
-			}
-
-			return html.replace('<title>three.js</title>', '<title>' + htmlEncode(title) + '</title>');
-		});
-	})
-	.then((html: string) => {
-		setContentType('index.html');
-		return pubBucket.file(publishName + '/index.html').save(html, options);
-	})
-	.then(() => copy('js/libs/app.js', 'js/app.js'))
-	.then(() => copy('three.min.js', 'js/three.min.js'))
-	.then(() => {
-		if (vr) {
-			return copy('deps/VRControls.js', 'js/VRControls.js')
-			.then(() => copy('deps/VREffect.js', 'js/VREffect.js'))
-			.then(() => copy('deps/WebVR.js', 'js/WebVR.js'));
-		}
-		return Promise.resolve(true);
-	});
-
 	function copy(src: string, dst: string): Promise<any> {
 		const dstFile = pubBucket.file(publishName + '/' + dst);
 		return new Promise((resolve, reject) => {
 			setContentType(dst);
 			request(origin + '/' + src).pipe(dstFile.createWriteStream(options))
-			.on('finish', () => {
-				return resolve(true)
-			})
-			.on('error', (err: any) => {
-				return reject(err)
-			});
+				.on('finish', () => resolve(true))
+				.on('error', (err: any) => reject(err));
 		});
 	}
+
+	// When debugging locally copy the template files from the local web server.
+	// When operating as the public cloud function copy the template files from the public web server.
+	var origin = isProduction() ? 'https://darrinm.github.io/3DE' : 'http://localhost:8080';
+
+	// Run lots of slow async operations in parallel!
+	let promises: Promise<any>[] = [];
+
+	// Copy project.json -> app.json
+	// TODO: read and parse the project so, e.g. vr variable can be determined.
+	// Alternatively, write desired variables to the project table.
+	promises.push(privBucket.file(sourcePrefix + 'project.json').copy(publishPrefix + 'app.json')
+		.then((data: any[]) => setMetadata(data[0])));
+
+	// var newFile = data[0];
+	// var apiResponse = data[1];
+	promises.push(privBucket.file(sourcePrefix + 'thumbnail.jpg').copy(publishPrefix + 'thumbnail.jpg')
+		.then((data: any[]) => setMetadata(data[0])));
+
+	// Use app/index.html as a template, injecting the project title and appropriate script includes.
+	promises.push(requestp(origin + '/js/libs/app/index.html').then((html: string) => {
+		var includes: string[] = [];
+
+		if (vr) {
+			includes.push('<script src="js/VRControls.js"></script>');
+			includes.push('<script src="js/VREffect.js"></script>');
+			includes.push('<script src="js/WebVR.js"></script>');
+		}
+
+		html = html.replace('<!-- includes -->', includes.join('\n\t\t'));
+
+		// As per http://stackoverflow.com/questions/784586/convert-special-characters-to-html-in-javascript
+		// TODO: Node-ify
+		function htmlEncode(s: string) {
+			/* TODO:
+			var el = document.createElement('div');
+			el.innerText = el.textContent = s;
+			s = el.innerHTML;
+			*/
+			return s;
+		}
+
+		return html.replace('<title>three.js</title>', '<title>' + htmlEncode(title) + '</title>');
+	}).then((html: string) => {
+		setContentType('index.html');
+		return pubBucket.file(publishName + '/index.html').save(html, options);
+	}));
+
+	promises.push(copy('js/libs/app.js', 'js/app.js'));
+	promises.push(copy('three.min.js', 'js/three.min.js'));
+	if (vr) {
+		promises.push(copy('deps/VRControls.js', 'js/VRControls.js'));
+		promises.push(copy('deps/VREffect.js', 'js/VREffect.js'));
+		promises.push(copy('deps/WebVR.js', 'js/WebVR.js'));
+	}
+
+	return Promise.all(promises);
 }
