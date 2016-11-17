@@ -1,5 +1,3 @@
-## [Try it now.](https://darrinm.github.io/3DE)
-
 ## Install
 ```bash
 npm install
@@ -20,8 +18,9 @@ bin/deploy-api-server
 ```bash
 gcloud auth application-default login
 cd api-server
-node gcf-emu.js
-http --verbose POST :8081/api <command.json # needs a current user token
+tsc
+npm start
+# http --verbose POST :8081/api <command.json # needs a current user token
 
 # For running/debugging under Visual Studio Code see launch.json
 
