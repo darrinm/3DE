@@ -133,7 +133,6 @@
 
 			function removeProject(project) {
 				var cell = getCell(project.id);
-				console.log('removing project ' + project.id + ', cell: ' + cell);
 				// TODO: why does this get called twice?
 				if (cell)
 					grid.removeChild(cell);

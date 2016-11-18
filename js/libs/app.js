@@ -223,6 +223,7 @@ var APP = {
 			document.addEventListener( 'touchend', onDocumentTouchEnd );
 			document.addEventListener( 'touchmove', onDocumentTouchMove );
 
+			window.parent.postMessage( 'init', '*' );
 			dispatch( events.start, arguments );
 
 			request = requestAnimationFrame( animate );
