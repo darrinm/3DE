@@ -2,6 +2,41 @@
 
 <head>
 	<title>3DE Gallery</title>
+	<style>
+@keyframes spinner {
+    to {transform: rotate(360deg);}
+}
+
+@-webkit-keyframes spinner {
+    to {-webkit-transform: rotate(360deg);}
+}
+
+.spinner {
+    min-width: 24px;
+    min-height: 24px;
+}
+
+.spinner:before {
+    content: 'Loading…';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin-top: -10px;
+    margin-left: -10px;
+}
+
+.spinner:not(:required):before {
+    content: '';
+    border-radius: 50%;
+    border-top: 2px solid #ffffff;
+    border-right: 2px solid transparent;
+    animation: spinner .6s linear infinite;
+    -webkit-animation: spinner .6s linear infinite;
+}
+	</style>
+
 </head>
 
 <body>
@@ -24,7 +59,7 @@
 	</div>
 
 	<script>
-		var waits = [ 'Loading...', 'Fetching...', 'Just a sec...', 'Hold your horses...', 'Wait...', 'Almost there...', 'Any minute now...', 'Please wait...' ];
+		var waits = [ 'Loading...', 'Fetching...', 'Just a sec...', 'Hold your horses...', 'Wait...', 'Almost there...', 'Any minute now...', 'Please wait...', 'Coming soon...' ];
 		var wait = waits[Math.floor(Math.random() * waits.length)];
 		document.getElementById('projectGrid').innerHTML = wait;
 		var waiting = true;
@@ -67,9 +102,33 @@
 			return getElementById(grid, 'id-' + id);
 		}
 
+		var activeIframe = null;
+
 		function populateCell(cell, project) {
 			var anchor = document.createElement('a');
-			anchor.href = project.play;
+			//anchor.href = project.play;
+			anchor.addEventListener('click', function (event) {
+				if (activeIframe) {
+					activeIframe.remove();
+					activeIframe = null;
+				}
+				var iframe = document.createElement('iframe');
+				cell.classList.add('spinner');
+				iframe.addEventListener('load', function (event) {
+					window.addEventListener('message', function onmessage(event) {
+						if (event.data == 'init') {
+							iframe.style.display = 'block';
+							cell.classList.remove('spinner');
+						}
+						this.removeEventListener('message', onmessage);
+					});
+				});
+				iframe.frameBorder = 'none';
+				iframe.style.cssText = 'width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none;'
+				iframe.src = project.play;
+				cell.appendChild(iframe);
+				activeIframe = iframe;
+			});
 			var img = document.createElement('img');
 			img.src = project.thumbnail;
 			img.width = 400;

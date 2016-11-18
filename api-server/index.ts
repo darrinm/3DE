@@ -250,6 +250,8 @@ function publishProjectFiles(projectId: string, publishName: string, userId: str
 			includes.push('<script src="js/WebVR.js"></script>');
 		}
 
+		// TODO: replace the page's background color with the project scene's background color
+
 		html = html.replace('<!-- includes -->', includes.join('\n\t\t'));
 
 		// As per http://stackoverflow.com/questions/784586/convert-special-characters-to-html-in-javascript
