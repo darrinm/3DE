@@ -2,6 +2,15 @@
 
 'this' references the object the script is attached to.
 
+Script is first called with the (invisible) arguments:
+```javascript
+(player: Player, renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera)
+```
+
+Player { dom, width, height }
+
+Scripts have access to all browser globals including THREE.
+
 this.getObjectByName(name)
 
 ```javascript
