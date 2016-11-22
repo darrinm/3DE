@@ -414,6 +414,21 @@ Menubar.Add = function ( editor ) {
 	} );
 	options.add( option );
 
+	// OrthographicCamera
+
+	var option = new UI.Row();
+	option.setClass( 'option' );
+	option.setTextContent( 'OrthographicCamera' );
+	option.onClick( function() {
+
+		var camera = new THREE.OrthographicCamera( -50, 50, 50, -50, 1, 10000 );
+		camera.name = 'OrthographicCamera ' + ( ++ cameraCount );
+
+		editor.execute( new AddObjectCommand( camera ) );
+
+	} );
+	options.add( option );
+
 	return container;
 
 }

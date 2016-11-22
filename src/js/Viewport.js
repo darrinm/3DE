@@ -437,7 +437,7 @@ var Viewport = function ( editor ) {
 
 		}
 
-		if ( object instanceof THREE.PerspectiveCamera ) {
+		if ( object instanceof THREE.PerspectiveCamera || object instanceof THREE.OrthographicCamera ) {
 
 			object.updateProjectionMatrix();
 
