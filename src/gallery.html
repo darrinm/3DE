@@ -115,6 +115,7 @@
 				var iframe = document.createElement('iframe');
 				cell.classList.add('spinner');
 				iframe.addEventListener('load', function (event) {
+					this.contentWindow.focus();
 					window.addEventListener('message', function onmessage(event) {
 						if (event.data == 'init') {
 							iframe.style.display = 'block';
